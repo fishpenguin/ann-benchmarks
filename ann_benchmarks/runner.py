@@ -34,7 +34,8 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         # a bit dumb but can't be a scalar since of Python's scoping rules
         n_items_processed = [0]
 
-        def single_query(v):
+        def single_query(i, v):
+            print("%dth times..." % i)
             if prepared_queries:
                 algo.prepare_query(v, count)
                 start = time.time()
@@ -75,7 +76,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         if batch:
             results = batch_query(X_test)
         else:
-            results = [single_query(x) for x in X_test]
+            results = [single_query(i, x) for i, x in enumerate(X_test)]
 
         total_time = sum(time for time, _ in results)
         total_candidates = sum(len(candidates) for _, candidates in results)
@@ -112,6 +113,10 @@ function""" % (definition.module, definition.constructor, definition.arguments)
     X_train = numpy.array(D['train'])
     X_test = numpy.array(D['test'])
     distance = D.attrs['distance']
+    print("type D: ", type(D))
+    print("type x_train: ", type(X_train))
+    print("type x_test: ", type(X_test))
+    print("type distance: ", type(distance))
     print('got a train set of size (%d * %d)' % X_train.shape)
     print('got %d queries' % len(X_test))
 
@@ -159,7 +164,7 @@ def run_from_cmdline():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--dataset',
-        choices=DATASETS.keys(),
+        # choices=DATASETS.keys(),
         required=True)
     parser.add_argument(
         '--algorithm',
