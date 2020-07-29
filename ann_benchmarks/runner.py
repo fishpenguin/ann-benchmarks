@@ -35,7 +35,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         n_items_processed = [0]
 
         def single_query(i, v):
-            print("%dth times..." % i)
+            # print("%dth times..." % i)
             if prepared_queries:
                 algo.prepare_query(v, count)
                 start = time.time()

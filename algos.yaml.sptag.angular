@@ -1,0 +1,11 @@
+float:
+  angular:
+    sptag:
+      docker-tag: ann-benchmarks-sptag
+      module: ann_benchmarks.algorithms.sptag
+      constructor: Sptag
+      base-args: ["@metric"]
+      run-groups:
+        sptag:
+          args: [['BKT', 'KDT']]
+          query-args: [[100, 200, 400, 1000, 2000, 4000]]
