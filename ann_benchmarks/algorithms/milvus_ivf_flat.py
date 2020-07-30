@@ -95,4 +95,4 @@ class MilvusIVFFLAT(BaseANN):
         return batch_results
 
     def __str__(self):
-        return 'Milvus(index={}, index_param={}, search_param={})'.format(self._index_type, self._index_param, self._search_param)
+        return 'MilvusIVFFLAT(index={}, index_param={}, search_param={})'.format(self._index_type, self._index_param, self._search_param)

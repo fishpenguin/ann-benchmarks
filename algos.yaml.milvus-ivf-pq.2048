@@ -1,0 +1,11 @@
+float:
+  euclidean:
+    milvus-ivf-pq:
+      docker-tag: ann-benchmarks-milvus
+      module: ann_benchmarks.algorithms.milvus_ivf_pq
+      constructor: MilvusIVFPQ
+      base-args: ["@metric"]
+      run-groups:
+        milvus:
+          args: [["IVF_PQ"], [2048]]
+          query-args: [[100, 50, 10]]
