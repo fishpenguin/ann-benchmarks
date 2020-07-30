@@ -88,6 +88,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         total_time = sum(time for time, _ in results) + handle_time
         total_candidates = sum(len(candidates) for _, candidates in results)
         search_time = total_time / len(X_test)
+        print("search_time: ", search_time)
         avg_candidates = total_candidates / len(X_test)
         best_search_time = min(best_search_time, search_time)
 
