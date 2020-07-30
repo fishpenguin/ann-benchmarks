@@ -167,7 +167,7 @@ def run_from_cmdline():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--dataset',
-        choices=DATASETS.keys(),
+        # choices=DATASETS.keys(),
         required=True)
     parser.add_argument(
         '--algorithm',
