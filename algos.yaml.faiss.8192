@@ -7,5 +7,5 @@ float:
       base-args: ["@metric"]
       run-groups:
         base:
-          args: [[32]]
-          query-args: [[1, 5, 10]]
+          args: [[8192]]
+          query-args: [[200, 100, 50]]
