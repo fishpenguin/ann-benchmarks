@@ -7,5 +7,5 @@ float:
       base-args: ["@metric"]
       run-groups:
         milvus:
-          args: [["IVF_FLAT"], [8192]]
+          args: [["IVF_FLAT"], [1024]]
           query-args: [[100, 50, 10]]
