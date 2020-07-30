@@ -1,11 +1,20 @@
 float:
   euclidean:
-    faiss-ivf-pq:
+    faiss-ivf-pq-32:
       docker-tag: ann-benchmarks-faiss
       module: ann_benchmarks.algorithms.faiss
       constructor: FaissIVFPQ
       base-args: ["@metric"]
       run-groups:
         base:
-          args: [[4096]]
+          args: [[4096], [32]]
+          query-args: [[100, 50, 10]]
+    faiss-ivf-pq-64:
+      docker-tag: ann-benchmarks-faiss
+      module: ann_benchmarks.algorithms.faiss
+      constructor: FaissIVFPQ
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [[4096], [64]]
           query-args: [[100, 50, 10]]
