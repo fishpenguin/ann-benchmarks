@@ -43,7 +43,7 @@ def get_dataset(which):
     hdf5_fn = get_dataset_fn(which)
     try:
         url = 'http://ann-benchmarks.com/%s.hdf5' % which
-        download(url, hdf5_fn)
+        # download(url, hdf5_fn)
     except:
         print("Cannot download %s" % url)
         if which in DATASETS:
