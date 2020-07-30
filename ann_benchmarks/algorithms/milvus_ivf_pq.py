@@ -7,5 +7,16 @@ from ann_benchmarks.algorithms.milvus_ivf_flat import MilvusIVFFLAT
 
 
 class MilvusIVFPQ(MilvusIVFFLAT):
+    def __init__(self, metric, index_type, nlist, m):
+        self._index_param = {'nlist': nlist, 'm': m}
+        self._search_param = {'nprobe': None}
+        self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
+        self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
+        self._table_name = 'test01'
+        self._index_type = index_type
+
+        # batch search
+        self._res = None
+
     def __str__(self):
         return 'MilvusIVFPQ(index={}, index_param={}, search_param={})'.format(self._index_type, self._index_param, self._search_param)

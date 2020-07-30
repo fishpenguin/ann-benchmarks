@@ -82,9 +82,10 @@ class FaissIVF(Faiss):
                                                     self._n_probe)
 
 class FaissIVFPQ(Faiss):
-    def __init__(self, metric, n_list):
+    def __init__(self, metric, n_list, m):
         self._n_list = n_list
         self._metric = metric
+        self._m = m
 
     def fit(self, X):
         if self._metric == 'angular':
@@ -95,7 +96,7 @@ class FaissIVFPQ(Faiss):
 
         self.quantizer = faiss.IndexFlatL2(X.shape[1])
         index = faiss.IndexIVFPQ(
-            self.quantizer, X.shape[1], self._n_list, 8, 8
+            self.quantizer, X.shape[1], self._n_list, self._m, 8
         )
         index.train(X)
         index.add(X)
@@ -107,8 +108,9 @@ class FaissIVFPQ(Faiss):
         self.index.nprobe = self._n_probe
 
     def __str__(self):
-        return 'FaissIVFPQ(n_list=%d, n_probe=%d)' % (
+        return 'FaissIVFPQ(n_list=%d, n_probe=%d, m=%d)' % (
             self._n_list,
-            self._n_probe
+            self._n_probe,
+            self._m
         )
 
