@@ -3,7 +3,7 @@ float:
     faiss-ivf-pq:
       docker-tag: ann-benchmarks-faiss
       module: ann_benchmarks.algorithms.faiss
-      constructor: FaissPQ
+      constructor: FaissIVFPQ
       base-args: ["@metric"]
       run-groups:
         base:
