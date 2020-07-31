@@ -1,0 +1,10 @@
+float:
+  euclidean:
+    faiss-sq:
+      docker-tag: ann-benchmarks-faiss
+      module: ann_benchmarks.algorithms.faiss
+      constructor: FaissSQ
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [["QT_4bit", "QT_4bit_uniform", "QT_8bit", "QT_8bit_uniform", "QT_fp16"]]
