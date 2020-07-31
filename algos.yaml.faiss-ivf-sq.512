@@ -1,0 +1,11 @@
+float:
+  euclidean:
+    faiss-ivf-sq:
+      docker-tag: ann-benchmarks-faiss
+      module: ann_benchmarks.algorithms.faiss
+      constructor: FaissIVFSQ
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [[512]]
+          query-args: [[200, 100, 50]]

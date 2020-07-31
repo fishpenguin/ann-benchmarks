@@ -1,0 +1,11 @@
+float:
+  euclidean:
+    milvus-ivf-sq8:
+      docker-tag: ann-benchmarks-milvus
+      module: ann_benchmarks.algorithms.milvus_ivf_flat
+      constructor: MilvusIVFSQ8
+      base-args: ["@metric"]
+      run-groups:
+        milvus:
+          args: [["IVF_SQ8"], [2048]]
+          query-args: [[100, 50, 10]]

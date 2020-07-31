@@ -82,10 +82,11 @@ class FaissIVF(Faiss):
                                                     self._n_probe)
 
 class FaissIVFPQ(Faiss):
-    def __init__(self, metric, n_list, m):
+    def __init__(self, metric, n_list, m, n_bits=8):
         self._n_list = n_list
         self._metric = metric
         self._m = m
+        self._n_bits = n_bits
 
     def fit(self, X):
         if self._metric == 'angular':
@@ -96,7 +97,7 @@ class FaissIVFPQ(Faiss):
 
         self.quantizer = faiss.IndexFlatL2(X.shape[1])
         index = faiss.IndexIVFPQ(
-            self.quantizer, X.shape[1], self._n_list, self._m, 8
+            self.quantizer, X.shape[1], self._n_list, self._m, self._n_bits
         )
         index.train(X)
         index.add(X)
@@ -114,3 +115,63 @@ class FaissIVFPQ(Faiss):
             self._m
         )
 
+class FaissIVFSQ(Faiss):
+    def __init__(self, metric, n_list, qname='QT_8bit', n_centroids=64):
+        self._n_list = n_list
+        self._metric = metric
+        self._qname = qname
+        self._n_centroids = n_centroids
+
+    def fit(self, X):
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+
+        self.quantizer = faiss.IndexFlatL2(X.shape[1])
+        qtype = getattr(faiss.ScalarQuantizer, self._qname)
+        index = faiss.IndexIVFScalarQuantizer(
+            self.quantizer, X.shape[1], self._n_centroids, qtype, faiss.METRIC_L2
+        )
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def set_query_arguments(self, n_probe):
+        faiss.cvar.indexIVF_stats.reset() # TODO: find why?
+        self._n_probe = n_probe
+        self.index.nprobe = self._n_probe
+
+    def __str__(self):
+        return 'FaissIVFSQ(n_list=%d, n_probe=%d, qname=%s, n_centroids=%d)' % (
+            self._n_list,
+            self._n_probe,
+            self._qname,
+            self._n_centroids
+        )
+
+class FaissSQ(Faiss):
+    def __init__(self, metric, qname='QT_8bit'):
+        self._metric = metric
+        self._qname = qname
+
+    def fit(self, X):
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+
+        qtype = getattr(faiss.ScalarQuantizer, self._qname)
+        index = faiss.IndexScalarQuantizer(
+            X.shape[1], qtype, faiss.METRIC_L2
+        )
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def __str__(self):
+        return 'FaissSQ(qname=%s)' % (
+            self._qname,
+        )
