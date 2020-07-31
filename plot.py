@@ -10,7 +10,7 @@ from ann_benchmarks.algorithms.definitions import get_definitions
 from ann_benchmarks.plotting.metrics import all_metrics as metrics
 from ann_benchmarks.plotting.utils import (get_plot_label, compute_metrics,
                                            create_linestyles, create_pointset)
-from ann_benchmarks.results import (store_results, load_all_results,
+from ann_benchmarks.results import (store_results, load_all_results, load_all_results_v2,
                                     get_unique_algorithms, get_algorithm_name)
 
 

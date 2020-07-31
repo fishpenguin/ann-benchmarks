@@ -9,7 +9,12 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "--dataset", "sift-128-euclidean",
+                "-Y",
+                "--batch"
+            ]
         }
     ]
 }

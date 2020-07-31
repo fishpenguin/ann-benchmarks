@@ -68,7 +68,8 @@ def load_all_results(dataset=None, count=None, split_batched=False,
                     except:
                         pass
                 yield properties, f
-            except:
+            except Exception as e:
+                print(str(e))
                 pass
 
 
