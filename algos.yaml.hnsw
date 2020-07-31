@@ -92,10 +92,10 @@ float:
       constructor: MilvusHNSW
       base-args: ["@metric"]
       run-groups:
-        M-4:
-          arg-groups:
-            - {"M": 4,  "efConstruction": 500}
-          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        # M-4:
+        #   arg-groups:
+        #     - {"M": 4,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
         M-8:
           arg-groups:
             - {"M": 8,  "efConstruction": 500}
@@ -120,7 +120,7 @@ float:
           arg-groups:
             - {"M": 48,  "efConstruction": 500}
           query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
-        M-64:
-          arg-groups:
-            - {"M": 64,  "efConstruction": 500}
-          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        # M-64:
+        #   arg-groups:
+        #     - {"M": 64,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
