@@ -1,0 +1,11 @@
+float:
+  euclidean:
+    milvus-gpu-ivf-flat:
+      docker-tag: ann-benchmarks-milvus
+      module: ann_benchmarks.algorithms.milvus_ivf_flat
+      constructor: MilvusIVFFLAT
+      base-args: ["@metric"]
+      run-groups:
+        milvus:
+          args: [["IVF_FLAT"], [4096]]
+          query-args: [[100, 50, 10]]

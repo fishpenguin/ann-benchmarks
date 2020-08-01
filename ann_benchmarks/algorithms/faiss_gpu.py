@@ -1,11 +1,14 @@
 from __future__ import absolute_import
 import sys
 # Assumes local installation of FAISS
-sys.path.append("faiss")  # noqa
+# sys.path.append("faiss")  # noqa
 import numpy
 import ctypes
 import faiss
 from ann_benchmarks.algorithms.base import BaseANN
+from ann_benchmarks.algorithms.faiss import (FaissIVF,
+                                             FaissIVFPQ,
+                                             FaissIVFSQ)
 
 # Implementation based on
 # https://github.com/facebookresearch/faiss/blob/master/benchs/bench_gpu_sift1m.py  # noqa
@@ -59,3 +62,83 @@ class FaissGPU(BaseANN):
                     r.append(l)
             res.append(r)
         return res
+
+class FaissGPUIVF(FaissIVF):
+    def fit(self, X):
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+        
+        dimension = X.shape[1]
+        index = faiss.GpuIndexIVFFlat(
+            faiss.StandardGpuResources(),
+            dimension,
+            self._n_list,
+            faiss.METRIC_L2,
+        )
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def __str__(self):
+        return 'FaissGPUIVF(n_list=%d, n_probe=%d)' % (self._n_list,
+                                                       self._n_probe)
+
+class FaissGPUIVFPQ(FaissIVFPQ):
+    def fit(self, X):
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+
+        dimension = X.shape[1]
+        index = faiss.GpuIndexIVFPQ(
+            faiss.StandardGpuResources(),
+            dimension,
+            self._n_list,
+            self._m,
+            self._n_bits,
+            faiss.METRIC_L2,
+        )
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def __str__(self):
+        return 'FaissGPUIVFPQ(n_list=%d, n_probe=%d, m=%d)' % (
+            self._n_list,
+            self._n_probe,
+            self._m
+        )
+
+class FaissGPUIVFSQ(FaissIVFSQ):
+    def fit(self, X):
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+
+        dimension = X.shape[1]
+        qtype = getattr(faiss.ScalarQuantizer, self._qname)
+        index = faiss.GpuIndexIVFScalarQuantizer(
+            faiss.StandardGpuResources(),
+            dimension,
+            self._n_centroids,
+            qtype,
+            faiss.METRIC_L2
+        )
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def __str__(self):
+        return 'FaissGPUIVFSQ(n_list=%d, n_probe=%d, qname=%s, n_centroids=%d)' % (
+            self._n_list,
+            self._n_probe,
+            self._qname,
+            self._n_centroids
+        )

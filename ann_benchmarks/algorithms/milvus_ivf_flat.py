@@ -12,7 +12,8 @@ class MilvusIVFFLAT(BaseANN):
         self._search_param = {'nprobe': None}
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
         self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
-        self._table_name = 'test01'
+        import uuid
+        self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._index_type = index_type
 
         # batch search
@@ -96,6 +97,9 @@ class MilvusIVFFLAT(BaseANN):
 
     def __str__(self):
         return 'MilvusIVFFLAT(index={}, index_param={}, search_param={})'.format(self._index_type, self._index_param, self._search_param)
+
+    # def done(self):
+    #     self._milvus.drop_collection(self._table_name)
 
 class MilvusIVFSQ8(MilvusIVFFLAT):
     def __str__(self):

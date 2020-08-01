@@ -12,7 +12,8 @@ class MilvusIVFPQ(MilvusIVFFLAT):
         self._search_param = {'nprobe': None}
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
         self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
-        self._table_name = 'test01'
+        import uuid
+        self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._index_type = index_type
 
         # batch search

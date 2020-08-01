@@ -12,7 +12,8 @@ class MilvusAnnoy(BaseANN):
         self._search_k = None
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
         self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
-        self._table_name = 'test01'
+        import uuid
+        self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
 
     def fit(self, X):
         if self._metric == milvus.MetricType.IP:
@@ -86,3 +87,6 @@ class MilvusAnnoy(BaseANN):
 
     def __str__(self):
         return 'Milvus(index={}, index_param={}, search_param={})'.format("milvus.ANNOY", self._n_trees, self._search_k)
+
+    # def done(self):
+    #     self._milvus.drop_collection(self._table_name)

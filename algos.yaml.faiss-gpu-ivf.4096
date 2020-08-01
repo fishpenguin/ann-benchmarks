@@ -1,0 +1,11 @@
+float:
+  euclidean:
+    faiss-gpu-ivf:
+      docker-tag: ann-benchmarks-faiss
+      module: ann_benchmarks.algorithms.faiss_gpu
+      constructor: FaissGPUIVF
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [[4096]]
+          query-args: [[10, 100, 50]]
