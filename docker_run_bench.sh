@@ -26,21 +26,22 @@
 
 # python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.hnsw
 
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.sptag
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.sptag
 
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.8192
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.4096
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.2048
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.1024
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.512
+#python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.8192
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.4096
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.2048
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.1024
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-ivf-sq.512
 
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-sq
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.faiss-sq
 
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.8192
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.4096
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.2048
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.1024
-python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.512
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.8192
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.4096
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.2048
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.1024
+# python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8.512
 
 # python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8h.8192
 # python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.milvus-ivf-sq8h.4096

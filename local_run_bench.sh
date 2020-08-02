@@ -1,5 +1,9 @@
 #!/bin/bash
 
+sleep 12h
+
+python run.py --dataset sift-128-euclidean --batch --definitions algos.yaml.hnsw
+
 python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-ivf.8192
 python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-ivf.4096
 python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-ivf.2048
