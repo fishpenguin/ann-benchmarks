@@ -36,8 +36,8 @@ python run.py --dataset sift-128-euclidean --batch --local --definitions algos.y
 python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-ivf-sq8.1024
 python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-ivf-sq8.512
 
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-ivf-sq8h.8192
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-ivf-sq8h.4096
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-ivf-sq8h.2048
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-ivf-sq8h.1024
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-ivf-sq8h.512
+python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-ivf-sq8h.8192
+python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-ivf-sq8h.4096
+python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-ivf-sq8h.2048
+python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-ivf-sq8h.1024
+python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-ivf-sq8h.512
