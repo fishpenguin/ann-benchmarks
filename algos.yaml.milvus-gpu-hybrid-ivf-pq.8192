@@ -1,0 +1,20 @@
+float:
+  euclidean:
+    milvus-gpu-hybrid-ivf-pq-32:
+      docker-tag: ann-benchmarks-milvus
+      module: ann_benchmarks.algorithms.milvus_ivf_pq
+      constructor: MilvusIVFPQ
+      base-args: ["@metric"]
+      run-groups:
+        milvus:
+          args: [["IVF_PQ"], [8192], [32]]
+          query-args: [[200, 100, 50]]
+    # milvus-gpu-hybrid-ivf-pq-64:
+    #   docker-tag: ann-benchmarks-milvus
+    #   module: ann_benchmarks.algorithms.milvus_ivf_pq
+    #   constructor: MilvusIVFPQ
+    #   base-args: ["@metric"]
+    #   run-groups:
+    #     milvus:
+    #       args: [["IVF_PQ"], [8192], [64]]
+    #       query-args: [[200, 100, 50]]

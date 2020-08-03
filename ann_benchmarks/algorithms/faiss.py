@@ -115,9 +115,35 @@ class FaissIVFPQ(Faiss):
             self._m
         )
 
+class FaissOIVFPQ(FaissIVFPQ):
+    def fit(self, X):
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+
+        self.quantizer = faiss.IndexFlatL2(X.shape[1])
+        dimension = X.shape[1]
+        index = faiss.IndexIVFPQ(
+            self.quantizer, dimension, self._n_list, self._m, self._n_bits
+        )
+        opq_matrix = faiss.OPQMatrix(dimension, self._m)
+        # opq_matrix.niter = 10 # TODO find how this parameter works
+        index = faiss.IndexPreTransform(opq_matrix, index)
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def __str__(self):
+        return 'FaissOIVFPQ(n_list=%d, n_probe=%d, m=%d)' % (
+            self._n_list,
+            self._n_probe,
+            self._m
+        )
+
 class FaissIVFSQ(Faiss):
-    def __init__(self, metric, n_list, qname='QT_8bit', n_centroids=64):
-        self._n_list = n_list
+    def __init__(self, metric, n_centroids=64, qname='QT_8bit'):
         self._metric = metric
         self._qname = qname
         self._n_centroids = n_centroids
@@ -144,8 +170,7 @@ class FaissIVFSQ(Faiss):
         self.index.nprobe = self._n_probe
 
     def __str__(self):
-        return 'FaissIVFSQ(n_list=%d, n_probe=%d, qname=%s, n_centroids=%d)' % (
-            self._n_list,
+        return 'FaissIVFSQ(n_probe=%d, qname=%s, n_centroids=%d)' % (
             self._n_probe,
             self._qname,
             self._n_centroids

@@ -11,9 +11,11 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "--dataset", "sift-128-euclidean",
+                "--dataset",
+                "sift-128-euclidean",
                 "-Y",
-                "--batch"
+                "--batch",
+                "--recompute"
             ]
         }
     ]
