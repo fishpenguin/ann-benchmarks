@@ -62,8 +62,8 @@
 # python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-hybrid-ivf-sq8h.1024
 # python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.milvus-gpu-hybrid-ivf-sq8h.512
 
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.8192
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.4096
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.2048
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.1024
-python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.512
+# python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.8192
+# python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.4096
+# python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.2048
+# python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.1024
+# python run.py --dataset sift-128-euclidean --batch --local --definitions algos.yaml.faiss-gpu-o-ivf-pq.512
