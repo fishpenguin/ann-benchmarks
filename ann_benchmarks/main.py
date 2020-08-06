@@ -103,7 +103,7 @@ def main():
     parser.add_argument(
         '--batchsize',
         type=greater_than_1,
-        default=math.inf)
+        default=sys.maxsize)
     parser.add_argument(
         '--max-n-algorithms',
         type=int,
