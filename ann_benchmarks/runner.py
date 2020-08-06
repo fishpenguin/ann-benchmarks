@@ -246,9 +246,9 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
             os.path.abspath('results'):
                 {'bind': '/home/app/results', 'mode': 'rw'},
         },
-        #environment=["OMP_NUM_THREADS={}".format(omp_thread)],
-        cpuset_cpus=cpu_limit,
-        mem_limit=mem_limit,
+        environment=["OMP_NUM_THREADS={}".format(omp_thread)],
+        # cpuset_cpus=cpu_limit,
+        # mem_limit=mem_limit,
         detach=True)
 
     def stream_logs():
