@@ -53,7 +53,7 @@ def handle_deep_1b(out_fn):
         train = f.create_dataset(
             'train',
             (vector_nums, dimension),
-            dtype=train.dtype,
+            dtype=test.dtype,
         )
         for i in range(vector_nums):
             ftrain.read(4)
