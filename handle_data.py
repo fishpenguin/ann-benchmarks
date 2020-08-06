@@ -44,17 +44,17 @@ def handle_deep_1b(out_fn):
     f.create_dataset('neighbors', (len(test), count), dtype='i')[:] = ground_truth
 
     # no enough memory to directly use fvecs_read
-    train = f.create_dataset(
-        'train',
-        (len(train), dimension),
-        dtype=train.dtype,
-    )
     train_fn = '/cifs/data/milvus_paper/deep1b/base/base.fvecs'
     with open(train_fn, 'rb') as ftrain:
         train_size = os.path.getsize(train_fn)
         train_dimension, = struct.unpack('i', ftrain.read(4))
         assert train_dimension == dimension
         vector_nums = train_size // (4 + 4 * train_dimension)
+        train = f.create_dataset(
+            'train',
+            (vector_nums, dimension),
+            dtype=train.dtype,
+        )
         for i in range(vector_nums):
             ftrain.read(4)
             train[i] = struct.unpack('f' * train_dimension, ftrain.read(train_dimension * 4))
