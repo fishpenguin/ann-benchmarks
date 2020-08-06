@@ -23,7 +23,7 @@ from ann_benchmarks.results import store_results
 
 
 def run_individual_query(algo, X_train, X_test, distance, count, run_count,
-                         batch):
+                         batch, batchsize):
     prepared_queries = \
         (batch and hasattr(algo, "prepare_batch_query")) or \
         ((not batch) and hasattr(algo, "prepare_query"))
@@ -78,7 +78,19 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
             return (total, candidates)
 
         if batch:
-            results = batch_query(X_test)
+            if batchsize >= len(X_test):
+                results = batch_query(X_test)
+            else:
+                ress = [batch_query(X_test[batchsize*i:batchsize*(i+1)])
+                            for i in range(int(len(X_test)/batchsize))]
+
+                tail = len(X_test) % batchsize
+                if tail != 0:
+                    ress.append(batch_query(X_test[-tail:]))
+
+                results = []
+                for item in ress:
+                    results.extend(item)
             handle_time = 0
         else:
             query_list = [single_query(x) for x in X_test]
@@ -88,7 +100,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         total_time = sum(time for time, _ in results) + handle_time
         total_candidates = sum(len(candidates) for _, candidates in results)
         search_time = total_time / len(X_test)
-        print("search_time: ", search_time)
+        # print("search_time: ", search_time)
         avg_candidates = total_candidates / len(X_test)
         best_search_time = min(best_search_time, search_time)
 
@@ -109,7 +121,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
     return (attrs, results)
 
 
-def run(definition, dataset, count, run_count, batch):
+def run(definition, dataset, count, run_count, batch, batchsize):
     algo = instantiate_algorithm(definition)
     assert not definition.query_argument_groups \
         or hasattr(algo, "set_query_arguments"), """\
@@ -152,7 +164,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
             if query_arguments:
                 algo.set_query_arguments(*query_arguments)
             descriptor, results = run_individual_query(
-                algo, X_train, X_test, distance, count, run_count, batch)
+                algo, X_train, X_test, distance, count, run_count, batch, batchsize)
             descriptor["build_time"] = build_time
             descriptor["index_size"] = index_size
             descriptor["algo"] = get_algorithm_name(
@@ -188,6 +200,10 @@ def run_from_cmdline():
         required=True,
         type=int)
     parser.add_argument(
+        '--batchsize',
+        required=True,
+        type=int)
+    parser.add_argument(
         '--batch',
         action='store_true')
     parser.add_argument(
@@ -209,10 +225,11 @@ def run_from_cmdline():
         query_argument_groups=query_args,
         disabled=False
     )
-    run(definition, args.dataset, args.count, args.runs, args.batch)
+    run(definition, args.dataset, args.count,
+        args.runs, args.batch, args.batchsize)
 
 
-def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
+def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit, batchsize,
                mem_limit=None):
     cmd = ['--dataset', dataset,
            '--algorithm', definition.algorithm,
@@ -221,6 +238,7 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
            '--runs', str(runs),
            '--count', str(count)]
     if batch:
+        cmd += ['--batchsize', str(batchsize)]
         cmd += ['--batch']
     cmd.append(json.dumps(definition.arguments))
     cmd += [json.dumps(qag) for qag in definition.query_argument_groups]

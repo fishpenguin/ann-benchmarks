@@ -114,6 +114,37 @@ class FaissGPUIVFPQ(FaissIVFPQ):
             self._m
         )
 
+class FaissGPUOIVFPQ(FaissGPUIVFPQ):
+    def fit(self, X):
+        if self._metric == 'angular':
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if X.dtype != numpy.float32:
+            X = X.astype(numpy.float32)
+
+        dimension = X.shape[1]
+        index = faiss.GpuIndexIVFPQ(
+            faiss.StandardGpuResources(),
+            dimension,
+            self._n_list,
+            self._m,
+            self._n_bits,
+            faiss.METRIC_L2,
+        )
+        opq_matrix = faiss.OPQMatrix(dimension, self._m)
+        # opq_matrix.niter = 10 # TODO find how this parameter works
+        index = faiss.IndexPreTransform(opq_matrix, index)
+        index.train(X)
+        index.add(X)
+        self.index = index
+
+    def __str__(self):
+        return 'FaissGPUOIVFPQ(n_list=%d, n_probe=%d, m=%d)' % (
+            self._n_list,
+            self._n_probe,
+            self._m
+        )
+
 class FaissGPUIVFSQ(FaissIVFSQ):
     def fit(self, X):
         if self._metric == 'angular':
@@ -136,8 +167,7 @@ class FaissGPUIVFSQ(FaissIVFSQ):
         self.index = index
 
     def __str__(self):
-        return 'FaissGPUIVFSQ(n_list=%d, n_probe=%d, qname=%s, n_centroids=%d)' % (
-            self._n_list,
+        return 'FaissGPUIVFSQ(n_probe=%d, qname=%s, n_centroids=%d)' % (
             self._n_probe,
             self._qname,
             self._n_centroids
