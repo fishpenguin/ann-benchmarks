@@ -28,27 +28,37 @@ def bvecs_to_ndarray(bvecs_fn):
         return v
 
 def handle_deep_1b(out_fn):
+    f = h5py.File(out_fn, 'w')
+    f.attrs['distance'] = 'angular'
+    f.attrs['point_type'] = 'float'
     ground_truth = ivecs_read('/cifs/data/milvus_paper/deep1b/deep1B_groundtruth.ivecs')
     test = fvecs_read('/cifs/data/milvus_paper/deep1b/deep1B_queries.fvecs')
     dimension = len(test[0])
     assert len(ground_truth) == len(test)
     count = len(ground_truth[0]) # top k
-    train = fvecs_read('/cifs/data/milvus_paper/deep1b/base/base.fvecs')
-    assert dimension == len(train[0])
-    f = h5py.File(out_fn, 'w')
-    f.attrs['distance'] = 'angular'
-    f.attrs['point_type'] = 'float'
-    f.create_dataset(
-        'train',
-        (len(train), dimension),
-        dtype=train.dtype,
-    )[:] = train
     f.create_dataset(
         'test',
         (len(test), dimension),
         dtype=test.dtype,
     )[:] = test
-    f.create_dataset('neighbors', (len(test), count), dtype='i') = ground_truth
+    f.create_dataset('neighbors', (len(test), count), dtype='i')[:] = ground_truth
+
+    # no enough memory to directly use fvecs_read
+    train = f.create_dataset(
+        'train',
+        (len(train), dimension),
+        dtype=train.dtype,
+    )
+    train_fn = '/cifs/data/milvus_paper/deep1b/base/base.fvecs'
+    with open(train_fn, 'rb') as ftrain:
+        train_size = os.path.getsize(train_fn)
+        train_dimension, = struct.unpack('i', ftrain.read(4))
+        assert train_dimension == dimension
+        vector_nums = train_size // (4 + 4 * train_dimension)
+        for i in range(vector_nums):
+            ftrain.read(4)
+            train[i] = struct.unpack('f' * train_dimension, ftrain.read(train_dimension * 4))
+
     distances = f.create_dataset('distances', (len(test), count), dtype='f')
     for i, x in enumerate(test):
         distances[i] = [np.dot(train[idx], x) for idx in ground_truth[i]]
