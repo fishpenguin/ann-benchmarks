@@ -3,6 +3,7 @@
 import os
 import struct
 import numpy as np
+import time
 import h5py
 import sklearn.preprocessing
 
@@ -55,9 +56,12 @@ def handle_deep_1b(out_fn):
             (vector_nums, dimension),
             dtype=test.dtype,
         )
+        begin = time.time()
         for i in range(vector_nums):
             ftrain.read(4)
             train[i] = struct.unpack('f' * train_dimension, ftrain.read(train_dimension * 4))
+            if i % 10000 == 0:
+                print("handle %dth vector, time cost: %d" % (i, time.time() - begin))
 
     distances = f.create_dataset('distances', (len(test), count), dtype='f')
     for i, x in enumerate(test):
