@@ -34,6 +34,7 @@ def handle_deep_1b(out_fn):
     f.attrs['point_type'] = 'float'
     ground_truth = ivecs_read('/cifs/data/milvus_paper/deep1b/deep1B_groundtruth.ivecs')
     test = fvecs_read('/cifs/data/milvus_paper/deep1b/deep1B_queries.fvecs')
+    test = sklearn.preprocessing.normalize(test, axis=1, norm='l2')
     dimension = len(test[0])
     assert len(ground_truth) == len(test)
     count = len(ground_truth[0]) # top k
@@ -61,8 +62,17 @@ def handle_deep_1b(out_fn):
         begin = time.time()
         ftrain.seek(0)
         for i in range(vector_nums):
-            ftrain.read(4)
+            ftrain.read(4) # ignore dimension, faster
+            #train_dimension, = struct.unpack('i', ftrain.read(4))
+            #assert train_dimension == dimension
             train[i] = struct.unpack('f' * train_dimension, ftrain.read(train_dimension * 4))
+            #lens = (train[i] ** 2).sum(-1)
+            #train[i] /= np.sqrt(lens)[..., np.newaxis]
+            # below is faster
+            train[i] = sklearn.preprocessing.normalize([train[i]], axis=1, norm='l2')[0]
+            #print('type(train[i]: ', type(train[i]))
+            #print((train[i] ** 2).sum(-1))
+            #assert (train[i] ** 2).sum(-1) == 1.0
             if i % 100000 == 0:
                 print("handle %dth vector, time cost: %d" % (i, time.time() - begin))
 
