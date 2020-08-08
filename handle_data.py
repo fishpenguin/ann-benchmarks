@@ -33,7 +33,7 @@ def handle_deep_1b(out_fn):
     f.attrs['distance'] = 'angular'
     f.attrs['point_type'] = 'float'
     ground_truth = ivecs_read('/cifs/data/milvus_paper/deep1b/deep1B_groundtruth.ivecs')
-    test = fvecs_read('/cifs/data/milvus_paper/deep1b/deep1B_queries.fvecs')
+    test = sklearn.preprocessing.normalize(fvecs_read('/cifs/data/milvus_paper/deep1b/deep1B_queries.fvecs'), axis=1, norm='l2')
     dimension = len(test[0])
     assert len(ground_truth) == len(test)
     count = len(ground_truth[0]) # top k
@@ -63,6 +63,7 @@ def handle_deep_1b(out_fn):
         for i in range(vector_nums):
             ftrain.read(4)
             train[i] = struct.unpack('f' * train_dimension, ftrain.read(train_dimension * 4))
+            train[i] = sklearn.preprocessing.normalize(train[i], axis=1, norm='l2')
             if i % 100000 == 0:
                 print("handle %dth vector, time cost: %d" % (i, time.time() - begin))
 
