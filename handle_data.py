@@ -49,14 +49,17 @@ def handle_deep_1b(out_fn):
     with open(train_fn, 'rb') as ftrain:
         train_size = os.path.getsize(train_fn)
         train_dimension, = struct.unpack('i', ftrain.read(4))
+        print("train_dimension: ", train_dimension)
         assert train_dimension == dimension
         vector_nums = train_size // (4 + 4 * train_dimension)
+        print("vector_nums: ", vector_nums)
         train = f.create_dataset(
             'train',
             (vector_nums, dimension),
             dtype=test.dtype,
         )
         begin = time.time()
+        ftrain.seek(0)
         for i in range(vector_nums):
             ftrain.read(4)
             train[i] = struct.unpack('f' * train_dimension, ftrain.read(train_dimension * 4))
