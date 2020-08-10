@@ -22,11 +22,43 @@ def bvecs_to_ndarray(bvecs_fn):
         vector_nums = fsize // (4 + dimension)
 
         v = np.zeros((vector_nums, dimension))
+        f.seek(0)
         for i in range(vector_nums):
             f.read(4)
             v[i] = struct.unpack('B' * dimension, f.read(dimension))
         
         return v
+
+def handle_sift_1b(out_fn, size='1000M'):
+    f = h5py.File(out_fn, 'w')
+    f.attrs['distance'] = 'euclidean'
+    f.attrs['point_type'] = 'float'
+
+    idx_file = '/data1/workspace/milvus_data/sift_data/gnd/idx_{}.ivecs'.format(size)
+    dis_file = '/data1/workspace/milvus_data/sift_data/gnd/dis_{}.fvecs'.format(size)
+
+    neighbors = ivecs_read(idx_file)
+    distances = fvecs_read(dis_file)
+    train = bvecs_to_ndarray('/data1/worksparce/milvus_data/sift_data/bigann_base.bvecs')
+    test = bvecs_to_ndarray('/data1/worksparce/milvus_data/sift_data/bigann_query.bvecs')
+    dimension = len(test[0])
+    assert len(neighbors) == len(distances) == len(test)
+    count = len(neighbors[0])
+
+    f.create_dataset(
+        'test',
+        (len(test), dimension),
+        dtype=test.dtype,
+    )[:] = test
+    f.create_dataset(
+        'train',
+        (len(train), dimension),
+        dtype=train.dtype,
+    )[:] = train
+    f.create_dataset('neighbors', (len(test), count), dtype='i')[:] = neighbors
+    f.create_dataset('distances', (len(test), count), dtype='f')[:] = distances
+
+    f.close()
 
 def handle_deep_1b(out_fn):
     f = h5py.File(out_fn, 'w')
