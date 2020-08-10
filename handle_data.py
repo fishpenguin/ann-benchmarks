@@ -39,8 +39,8 @@ def handle_sift_1b(out_fn, size='1000M'):
 
     neighbors = ivecs_read(idx_file)
     distances = fvecs_read(dis_file)
-    train = bvecs_to_ndarray('/data1/worksparce/milvus_data/sift_data/bigann_base.bvecs')
-    test = bvecs_to_ndarray('/data1/worksparce/milvus_data/sift_data/bigann_query.bvecs')
+    train = bvecs_to_ndarray('/data1/workspace/milvus_data/sift_data/bigann_base.bvecs')
+    test = bvecs_to_ndarray('/data1/workspace/milvus_data/sift_data/bigann_query.bvecs')
     dimension = len(test[0])
     assert len(neighbors) == len(distances) == len(test)
     count = len(neighbors[0])
