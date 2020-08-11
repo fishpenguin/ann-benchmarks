@@ -5,7 +5,6 @@ import struct
 import numpy as np
 import time
 import h5py
-import sklearn.preprocessing
 
 def ivecs_read(fname):
     a = np.fromfile(fname, dtype='int32')
@@ -19,11 +18,16 @@ def bvecs_to_ndarray(bvecs_fn):
     with open(bvecs_fn, 'rb') as f:
         fsize = os.path.getsize(bvecs_fn)
         dimension, = struct.unpack('i', f.read(4))
+        print('dimension: ', dimension)
         vector_nums = fsize // (4 + dimension)
+        print('vector_nums: ', vector_nums)
 
         v = np.zeros((vector_nums, dimension))
         f.seek(0)
+        begin = time.time()
         for i in range(vector_nums):
+            if i % 10000 == 0:
+                print("handle %dth vector, time cost: %d" % (i, time.time() - begin))
             f.read(4)
             v[i] = struct.unpack('B' * dimension, f.read(dimension))
         
@@ -39,8 +43,8 @@ def handle_sift_1b(out_fn, size='1000M'):
 
     neighbors = ivecs_read(idx_file)
     distances = fvecs_read(dis_file)
-    train = bvecs_to_ndarray('/data1/worksparce/milvus_data/sift_data/bigann_base.bvecs')
-    test = bvecs_to_ndarray('/data1/worksparce/milvus_data/sift_data/bigann_query.bvecs')
+    train = bvecs_to_ndarray('/data1/workspace/milvus_data/sift_data/bigann_base.bvecs')
+    test = bvecs_to_ndarray('/data1/workspace/milvus_data/sift_data/bigann_query.bvecs')
     dimension = len(test[0])
     assert len(neighbors) == len(distances) == len(test)
     count = len(neighbors[0])
@@ -61,6 +65,7 @@ def handle_sift_1b(out_fn, size='1000M'):
     f.close()
 
 def handle_deep_1b(out_fn):
+    import sklearn.preprocessing
     f = h5py.File(out_fn, 'w')
     f.attrs['distance'] = 'angular'
     f.attrs['point_type'] = 'float'
@@ -114,7 +119,8 @@ def handle_deep_1b(out_fn):
     f.close()
 
 def main():
-    handle_deep_1b('/cifs/data/milvus_paper/deep1b/deep-1b-angular.hdf5')
+    #handle_deep_1b('/cifs/data/milvus_paper/deep1b/deep-1b-angular.hdf5')
+    handle_sift_1b('./sift-1b-euclidean.hdf5')
 
 if __name__ == "__main__":
     main()
