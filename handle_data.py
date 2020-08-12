@@ -6,6 +6,8 @@ import numpy as np
 import time
 import h5py
 
+sift_prefix = '/cifs/data/milvus_paper/sift'
+
 def ivecs_read(fname):
     a = np.fromfile(fname, dtype='int32')
     d = a[0]
@@ -61,6 +63,53 @@ def handle_sift_1b(out_fn, size='1000M'):
     )[:] = train
     f.create_dataset('neighbors', (len(test), count), dtype='i')[:] = neighbors
     f.create_dataset('distances', (len(test), count), dtype='f')[:] = distances
+
+    f.close()
+
+def handle_sift_1b_single(out_fn, size='1000M'):
+    f = h5py.File(out_fn, 'w')
+    f.attrs['distance'] = 'euclidean'
+    f.attrs['point_type'] = 'float'
+
+    idx_file = sift_prefix + '/gnd/idx_{}.ivecs'.format(size)
+    dis_file = sift_prefix + '/gnd/dis_{}.fvecs'.format(size)
+
+    neighbors = ivecs_read(idx_file)
+    distances = fvecs_read(dis_file)
+    test = bvecs_to_ndarray(sift_prefix + '/bigann_query.bvecs')
+    dimension = len(test[0])
+    assert len(neighbors) == len(distances) == len(test)
+    count = len(neighbors[0])
+
+    f.create_dataset('neighbors', (len(test), count), dtype='i')[:] = neighbors
+    f.create_dataset('distances', (len(test), count), dtype='f')[:] = distances
+    f.create_dataset(
+        'test',
+        (len(test), dimension),
+        dtype=test.dtype,
+    )[:] = test
+
+    train_fn = sift_prefix + '/bigann_base.bvecs'
+    with open(train_fn, 'rb') as ftrain:
+        train_size = os.path.getsize(train_fn)
+        train_dimension, = struct.unpack('i', ftrain.read(4))
+        print("train_dimension: ", train_dimension)
+        assert train_dimension == dimension
+        vector_nums = train_size // (4 + train_dimension)
+        print("vector_nums: ", vector_nums)
+        train = f.create_dataset(
+            'train',
+            (vector_nums, dimension),
+            dtype=test.dtype,
+        )
+        begin = time.time()
+        ftrain.seek(0)
+        for i in range(vector_nums):
+            train_dimension, = struct.unpack('i', ftrain.read(4))
+            assert train_dimension == dimension
+            train[i] = struct.unpack('B' * train_dimension, ftrain.read(train_dimension))
+            if i % 100000 == 0:
+                print("handle %dth vector, time cost: %d" % (i, time.time() - begin))
 
     f.close()
 
@@ -120,7 +169,8 @@ def handle_deep_1b(out_fn):
 
 def main():
     #handle_deep_1b('/cifs/data/milvus_paper/deep1b/deep-1b-angular.hdf5')
-    handle_sift_1b('./sift-1b-euclidean.hdf5')
+    #handle_sift_1b('./sift-1b-euclidean.hdf5')
+    handle_sift_1b_single(sift_prefix + '/sift-1b-euclidean.hdf5')
 
 if __name__ == "__main__":
     main()
