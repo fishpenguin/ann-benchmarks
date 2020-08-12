@@ -129,7 +129,7 @@ class AnalyticDBAsync(AnalyticDB):
 
             row_nums = len(X)
             # step = 10000
-            step = 1
+            step = 10
             coros = []
             for i in range(0, row_nums, step):
                 end = min(i + step, row_nums)
@@ -173,13 +173,13 @@ def main():
     client = AnalyticDBAsync(
         dataset='test_async',
         database='postgres',
-        user='ljq',
-        password='ljq',
-        host='localhost',
-        port=5432,
+        user='zilliz',
+        password='Fantast1c',
+        host='gp-bp1m6ek4zwlu0254ro.gpdb.rds.aliyuncs.com',
+        port=3432,
     )
     dimension = 4
-    vector_nums = 10
+    vector_nums = 30
     X = [[i] * dimension for i in range(vector_nums)]
     client.fit(X)
     qs = X

@@ -103,7 +103,7 @@ def get_unique_algorithms(definition_file):
 
 
 def get_definitions(definition_file, dimension, point_type="float",
-                    distance_metric="euclidean", count=10):
+                    distance_metric="euclidean", count=10, dataset='sift-128-euclidean'):
     definitions = _get_definitions(definition_file)
 
     algorithm_definitions = {}
@@ -163,7 +163,8 @@ def get_definitions(definition_file, dimension, point_type="float",
                 vs = {
                     "@count": count,
                     "@metric": distance_metric,
-                    "@dimension": dimension
+                    "@dimension": dimension,
+                    "@dataset": dataset,
                 }
                 aargs = [_substitute_variables(arg, vs) for arg in aargs]
                 definitions.append(Definition(
