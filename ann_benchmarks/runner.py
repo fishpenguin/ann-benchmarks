@@ -130,10 +130,8 @@ algorithm instantiated from it does not implement the set_query_arguments \
 function""" % (definition.module, definition.constructor, definition.arguments)
 
     D = get_dataset(dataset)
-    X_train = numpy.array(D['train'])
     X_test = numpy.array(D['test'])
     distance = D.attrs['distance']
-    print('got a train set of size (%d * %d)' % X_train.shape)
     print('got %d queries' % len(X_test))
 
     X_train = dataset_transform[distance](X_train)
@@ -146,9 +144,19 @@ function""" % (definition.module, definition.constructor, definition.arguments)
 
         t0 = time.time()
         memory_usage_before = algo.get_memory_usage()
-        print('begin fit...')
-        algo.fit(X_train)
-        print('fit done...')
+        if not algo.already_fit():
+            if algo.support_batch_fit():
+                train_size = len(D['train'])
+                print('got a train set of size (%d * %d)' % (train_size, len(D['train'][0])))
+                num_per_batch = 1000000
+                for i in range(0, train_size, num_per_batch):
+                    end = min(i + num_per_batch, train_size)
+                    X_train = numpy.array(D['train'][i:end])
+                    algo.batch_fit(X_train, train_size)
+            else:
+                X_train = numpy.array(D['train'])
+                print('got a train set of size (%d * %d)' % X_train.shape)
+                algo.fit(X_train)
         build_time = time.time() - t0
         index_size = algo.get_memory_usage() - memory_usage_before
         print('Built index in', build_time)

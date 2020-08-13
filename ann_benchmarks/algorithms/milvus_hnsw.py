@@ -4,9 +4,10 @@ import milvus
 import numpy
 import sklearn.preprocessing
 from ann_benchmarks.algorithms.base import BaseANN
+from ann_benchmarks.algorithms.milvus_ivf_flat import MilvusIVFFLAT
 
 
-class MilvusHNSW(BaseANN):
+class MilvusHNSW(MilvusIVFFLAT):
     def __init__(self, metric, method_param):
         self._metric = metric
 
@@ -14,13 +15,60 @@ class MilvusHNSW(BaseANN):
         self._method_param = method_param
         self._ef = None
         self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
-        import uuid
-        self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
+        # import uuid
+        # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
+        self._table_name = dataset.replace('-', '_')
+        postfix = '_hnsw_' + str(metric)
+        for key, value in method_param.items():
+            postfix += '_' + str(key) + '_' + str(value)
+        self._table_name += postfix
+
+        # batch fit
+        self._already_nums = 0
+
+    def batch_fit(self, X, total_num):
+        assert self._already_nums < total_num
+
+        if self._metric == milvus.MetricType.IP:
+            X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
+
+        if self._already_nums == 0:
+            status, has_table = self._milvus.has_collection(self._table_name)
+            if has_table:
+                self._milvus.drop_collection(self._table_name)
+            self._milvus.create_collection(
+                {'collection_name': self._table_name, 'dimension': X.shape[1],
+                 'index_file_size': 2048, 'metric_type': self._metric}
+            )
+
+        vector_ids = [id_ for id_ in range(self._already_nums, self._already_nums + len(X))]
+        records = X.tolist()
+        records_len = len(records)
+        step = 20000
+        for i in range(0, records_len, step):
+            end = min(i + step, records_len)
+            status, ids = self._milvus.insert(collection_name=self._table_name, records=records[i:end], ids=vector_ids[i:end])
+            if not status.OK():
+                raise Exception("Insert failed. {}".format(status))
+        self._milvus.flush([self._table_name])
+        self._already_nums += records_len
+
+        if self._already_nums == total_num:
+            index_param = {
+                "M": self._method_param["M"],
+                "efConstruction": self._method_param["efConstruction"]
+            }
+            status = self._milvus.create_index(self._table_name, milvus.IndexType.HNSW, params=index_param)
+            if not status.OK():
+                raise Exception("Create index failed. {}".format(status))
 
     def fit(self, X):
         if self._metric == milvus.MetricType.IP:
             X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
 
+        status, has_table = self._milvus.has_collection(self._table_name)
+        if has_table:
+            self._milvus.drop_collection(self._table_name)
         self._milvus.create_collection(
             {'collection_name': self._table_name, 'dimension': X.shape[1],
              'index_file_size': 2048, 'metric_type': self._metric}

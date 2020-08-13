@@ -31,36 +31,74 @@ class AnalyticDB(BaseANN):
         self._conn.autocommit = True
         self._cursor = self._conn.cursor()
         self._table_name = dataset.replace('-', '_')
+        self._already_nums = 0 # batch fit
 
-    def fit(self, X):
+    def _table_exist(self):
         exist_sql = "select count(*) from pg_class where relname = '{}'".format(self._table_name)
         self._cursor.execute(exist_sql)
         exist_rows = self._cursor.fetchall()
         assert len(exist_rows) == 1
-        if exist_rows[0][0] != 0:
-            count_sql = "select count(*) from {}".format(self._table_name)
-            self._cursor.execute(count_sql)
-            count_rows = self._cursor.fetchall()
-            if count_rows[0][0] >= len(X):
-                return # already in database, skip to save time
-            else:
-                self._cursor.execute('drop table {}'.format(self._table_name))
-                self._conn.commit()
+        return exist_rows[0][0] != 0
+
+    def _has_index(self):
+        has_index_sql = "select relhasindex from pg_class where relname = '{}'".format(self._table_name)
+        self._cursor.execute(has_index_sql)
+        has_index_rows = self._cursor.fetchall()
+        return has_index_rows[0][0]:
+
+    def _get_row_nums(self):
+        count_sql = "select count(*) from {}".format(self._table_name)
+        self._cursor.execute(count_sql)
+        count_rows = self._cursor.fetchall()
+        return count_rows[0][0]
+
+    def _drop_table(self):
+        self._cursor.execute('drop table {}'.format(self._table_name))
+        self._conn.commit()
+
+    def _create_table(self):
         create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
-        dimension = X.shape[1]
-        index_sql = "create index on {} using ann(vector) with (dim={})".format(self._table_name, dimension)
         self._cursor.execute(create_sql)
+        self._conn.commit()
+
+    def _create_index(self, dimension):
+        index_sql = "create index on {} using ann(vector) with (dim={})".format(self._table_name, dimension)
         self._cursor.execute(index_sql)
         self._conn.commit()
+
+    def already_fit(self):
+        if _table_exist():
+            if _get_row_nums() >= len(X) and _has_index():
+                return True
+        return False
+
+    def support_batch_fit(self):
+        return True
+
+    def _fit_with_offset(self, X, offset):
+        dimension = X.shape[1]
+        if self._already_nums == 0:
+            if _table_exist():
+                _drop_table()
+            _create_table()
+            _create_index(dimension)
 
         row_nums = len(X)
         step = 10000
         insert_sql = "insert into {}(id, vector) values %s".format(self._table_name)
         for i in range(0, row_nums, step):
             end = min(i + step, row_nums)
-            rows = [(j, X[j].tolist()) for j in range(i, end)]
+            rows = [(j + offset, X[j].tolist()) for j in range(i, end)]
             psycopg2.extras.execute_values(self._cursor, insert_sql, rows)
             self._conn.commit()
+
+    def batch_fit(self, X, total_num):
+        assert self._already_nums < total_num
+        _fit_with_offset(X, self._already_nums)
+        self._already_nums += row_nums
+
+    def fit(self, X):
+        _fit_with_offset(X, 0)
 
     def set_query_arguments(self, useless='useless'):
         pass
@@ -114,45 +152,36 @@ class AnalyticDBAsync(AnalyticDB):
             **db_setting
         ))
 
-    def fit(self, X):
-        exist_sql = "select count(*) from pg_class where relname = '{}'".format(self._table_name)
-        self._cursor.execute(exist_sql)
-        exist_rows = self._cursor.fetchall()
-        assert len(exist_rows) == 1
-        if exist_rows[0][0] != 0:
-            count_sql = "select count(*) from {}".format(self._table_name)
-            self._cursor.execute(count_sql)
-            count_rows = self._cursor.fetchall()
-            if count_rows[0][0] >= len(X):
-                print('already in database, skip to save time...')
-                return # already in database, skip to save time
-            else:
-                print('drop table...')
-                self._cursor.execute('drop table {}'.format(self._table_name))
-                self._conn.commit()
+    async def batch_insert(records):
+        async with self._db_pool.acquire() as conn:
+            await conn.copy_records_to_table(self._table_name, records=records)
 
-        create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
+    def _fit_with_offset(self, X, offset):
         dimension = X.shape[1]
-        index_sql = "create index on {} using ann(vector) with (dim={})".format(self._table_name, dimension)
-        self._cursor.execute(create_sql)
-        self._cursor.execute(index_sql)
-        self._conn.commit()
+        if _table_exist():
+            _drop_table()
+        _create_table()
+        _create_index(dimension)
 
         async def insert_records():
-            async def batch_insert(records):
-                async with self._db_pool.acquire() as conn:
-                    await conn.copy_records_to_table(self._table_name, records=records)
-
             row_nums = len(X)
             step = 10000
             coros = []
             for i in range(0, row_nums, step):
                 end = min(i + step, row_nums)
-                rows = [(j, X[j].tolist()) for j in range(i, end)]
+                rows = [(j + offset, X[j].tolist()) for j in range(i, end)]
                 coros.append(batch_insert(rows))
             await asyncio.gather(*coros)
 
         self._el.run_until_complete(insert_records())
+
+    def fit(self, X):
+        _fit_with_offset(X, 0)
+    
+    def batch_fit(self, X, total_num):
+        assert self._already_nums < total_num
+        _fit_with_offset(X, self._already_nums)
+        self._already_nums += len(X)
 
     def batch_query(self, X, n):
         # query_sql = "select id from {} order by vector <-> array$1 limit {}".format(self._table_name, n)
