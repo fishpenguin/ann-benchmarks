@@ -109,7 +109,9 @@ class AnalyticDBAsync(AnalyticDB):
         exist_rows = self._cursor.fetchall()
         assert len(exist_rows) == 1
         if exist_rows[0][0] != 0:
-            return # already in database, skip to save time
+            self._cursor.execute('drop table {}'.format(self._table_name))
+            self._conn.commit()
+            # return # already in database, skip to save time
 
         create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
         dimension = len(X[0])
@@ -150,7 +152,9 @@ class AnalyticDBAsync(AnalyticDB):
             async def single_query(i):
                 async with self._db_pool.acquire() as conn:
                     print("single query")
-                    rows[i] = await conn.fetch(query_sql, X[i])
+                    sql = "select id from {} order by vector <-> array{} limit {}".format(self._table_name, X[i], n)
+                    # rows[i] = await conn.fetch(query_sql, X[i])
+                    rows[i] = await conn.fetch(sql)
                     print("i: {}, rows[{}]: {}".format(i, i, rows[i]))
 
             coros = [single_query(i) for i in range(len(X))]
@@ -173,12 +177,12 @@ def main():
     client = AnalyticDBAsync(
         dataset='test_async',
         database='postgres',
-        user='zilliz',
+        user='annbench',
         password='Fantast1c',
         host='gp-bp19e1yl22d85gqgxo-master.gpdbmaster.rds.aliyuncs.com',
         port=5432,
     )
-    dimension = 4
+    dimension = 128
     vector_nums = 30
     X = [[i] * dimension for i in range(vector_nums)]
     client.fit(X)

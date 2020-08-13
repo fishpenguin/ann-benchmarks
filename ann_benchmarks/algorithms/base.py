@@ -13,6 +13,12 @@ class BaseANN(object):
         # return in kB for backwards compatibility
         return psutil.Process().memory_info().rss / 1024
 
+    def support_batch_fit(self):
+        return False
+
+    def batch_fit(self, X):
+        pass
+
     def fit(self, X):
         pass
 

@@ -10,11 +10,11 @@ class AnalyticDB(BaseANN):
         self,
         dataset,
         host='mygpdbpub.gpdb.rds.aliyuncs.com',
-        useless,
-        database='gpdb',
-        user='mygpdb',
-        password='mygpdb',
-        port=3432,
+        useless='useless',
+        database='postgres',
+        user='annbench',
+        password='Fantast1c',
+        port=5432,
     ):
         self._database = database
         self._user = user
@@ -38,7 +38,14 @@ class AnalyticDB(BaseANN):
         exist_rows = self._cursor.fetchall()
         assert len(exist_rows) == 1
         if exist_rows[0][0] != 0:
-            return # already in database, skip to save time
+            count_sql = "select count(*) from {}".format(self._table_name)
+            self._cursor.execute(count_sql)
+            count_rows = self._cursor.fetchall()
+            if count_rows[0][0] >= len(X):
+                return # already in database, skip to save time
+            else:
+                self._cursor.execute('drop table {}'.format(self._table_name))
+                self._conn.commit()
         create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
         dimension = X.shape[1]
         index_sql = "create index on {} using ann(vector) with (dim={})".format(self._table_name, dimension)
@@ -55,7 +62,7 @@ class AnalyticDB(BaseANN):
             psycopg2.extras.execute_values(self._cursor, insert_sql, rows)
             self._conn.commit()
 
-    def set_query_arguments(self, useless):
+    def set_query_arguments(self, useless='useless'):
         pass
 
     def query(self, v, n):
@@ -79,19 +86,20 @@ class AnalyticDBAsync(AnalyticDB):
         self,
         dataset,
         host='mygpdbpub.gpdb.rds.aliyuncs.com',
-        useless,
-        database='gpdb',
-        user='mygpdb',
-        password='mygpdb',
-        port=3432,
+        useless='useless',
+        database='postgres',
+        user='annbench',
+        password='Fantast1c',
+        port=5432,
     ):
         AnalyticDB.__init__(
             self,
             dataset,
+            host,
+            useless,
             database,
             user,
             password,
-            host,
             port,
         )
         self._el = asyncio.get_event_loop()
@@ -112,7 +120,16 @@ class AnalyticDBAsync(AnalyticDB):
         exist_rows = self._cursor.fetchall()
         assert len(exist_rows) == 1
         if exist_rows[0][0] != 0:
-            return # already in database, skip to save time
+            count_sql = "select count(*) from {}".format(self._table_name)
+            self._cursor.execute(count_sql)
+            count_rows = self._cursor.fetchall()
+            if count_rows[0][0] >= len(X):
+                print('already in database, skip to save time...')
+                return # already in database, skip to save time
+            else:
+                print('drop table...')
+                self._cursor.execute('drop table {}'.format(self._table_name))
+                self._conn.commit()
 
         create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
         dimension = X.shape[1]
@@ -138,13 +155,15 @@ class AnalyticDBAsync(AnalyticDB):
         self._el.run_until_complete(insert_records())
 
     def batch_query(self, X, n):
-        query_sql = "select id from {} order by vector <-> array$1 limit {}".format(self._table_name, n)
+        # query_sql = "select id from {} order by vector <-> array$1 limit {}".format(self._table_name, n)
 
         rows = list(range(len(X)))
         async def query_async():
             async def single_query(i):
                 async with self._db_pool.acquire() as conn:
-                    rows[i] = await conn.fetch(query_sql, X[i].tolist())
+                    sql = "select id from {} order by vector <-> array{} limit {}".format(self._table_name, X[i].tolist(), n)
+                    rows[i] = await conn.fetch(sql)
+                    # rows[i] = await conn.fetch(query_sql, X[i].tolist())
 
             coros = [single_query(i) for i in range(len(X))]
             await asyncio.gather(*coros)
