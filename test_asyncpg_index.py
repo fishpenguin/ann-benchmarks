@@ -175,8 +175,8 @@ def main():
         database='postgres',
         user='zilliz',
         password='Fantast1c',
-        host='gp-bp1m6ek4zwlu0254ro.gpdb.rds.aliyuncs.com',
-        port=3432,
+        host='gp-bp19e1yl22d85gqgxo-master.gpdbmaster.rds.aliyuncs.com',
+        port=5432,
     )
     dimension = 4
     vector_nums = 30

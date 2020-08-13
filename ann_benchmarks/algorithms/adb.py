@@ -9,10 +9,11 @@ class AnalyticDB(BaseANN):
     def __init__(
         self,
         dataset,
+        host='mygpdbpub.gpdb.rds.aliyuncs.com',
+        useless,
         database='gpdb',
         user='mygpdb',
         password='mygpdb',
-        host='mygpdbpub.gpdb.rds.aliyuncs.com',
         port=3432,
     ):
         self._database = database
@@ -54,6 +55,9 @@ class AnalyticDB(BaseANN):
             psycopg2.extras.execute_values(self._cursor, insert_sql, rows)
             self._conn.commit()
 
+    def set_query_arguments(self, useless):
+        pass
+
     def query(self, v, n):
         query_sql = """select id
                        from {}
@@ -74,10 +78,11 @@ class AnalyticDBAsync(AnalyticDB):
     def __init__(
         self,
         dataset,
+        host='mygpdbpub.gpdb.rds.aliyuncs.com',
+        useless,
         database='gpdb',
         user='mygpdb',
         password='mygpdb',
-        host='mygpdbpub.gpdb.rds.aliyuncs.com',
         port=3432,
     ):
         AnalyticDB.__init__(
