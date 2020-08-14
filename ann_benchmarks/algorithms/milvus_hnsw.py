@@ -8,7 +8,7 @@ from ann_benchmarks.algorithms.milvus_ivf_flat import MilvusIVFFLAT
 
 
 class MilvusHNSW(MilvusIVFFLAT):
-    def __init__(self, metric, method_param):
+    def __init__(self, metric, dataset, method_param):
         self._metric = metric
 
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
@@ -22,6 +22,7 @@ class MilvusHNSW(MilvusIVFFLAT):
         for key, value in method_param.items():
             postfix += '_' + str(key) + '_' + str(value)
         self._table_name += postfix
+        self._table_name.replace('-', '_')
 
         # batch fit
         self._already_nums = 0

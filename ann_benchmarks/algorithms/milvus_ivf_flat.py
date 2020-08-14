@@ -7,7 +7,7 @@ from ann_benchmarks.algorithms.base import BaseANN
 
 
 class MilvusIVFFLAT(BaseANN):
-    def __init__(self, metric, index_type, nlist, dataset):
+    def __init__(self, metric, dataset, index_type, nlist):
         self._index_param = {'nlist': nlist}
         self._search_param = {'nprobe': None}
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
@@ -17,6 +17,7 @@ class MilvusIVFFLAT(BaseANN):
         self._table_name = dataset.replace('-', '_')
         postfix = '_' + str(metric) + '_' + str(index_type) + '_' + str(nlist)
         self._table_name += postfix
+        self._table_name.replace('-', '_')
         self._index_type = index_type
 
         # batch fit
