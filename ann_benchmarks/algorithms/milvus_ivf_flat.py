@@ -32,9 +32,9 @@ class MilvusIVFFLAT(BaseANN):
     def already_fit(self, total_num):
         status, has_table = self._milvus.has_collection(self._table_name)
         if has_table:
-            status, table_info = self._milvus.get_collection_info(self._table_name)
-            if table_info:
-                row_nums = table_info.get('row_count')
+            status, table_stats = self._milvus.get_collection_stats(self._table_name)
+            if table_stats:
+                row_nums = table_stats['row_count']
                 if row_nums >= total_num:
                     # self._already_nums == row_nums
                     status, index_info = self._milvus.get_index_info(self._table_name)
