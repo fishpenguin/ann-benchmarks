@@ -66,9 +66,9 @@ class AnalyticDB(BaseANN):
         self._cursor.execute(index_sql)
         self._conn.commit()
 
-    def already_fit(self):
+    def already_fit(self, total_num):
         if _table_exist():
-            if _get_row_nums() >= len(X) and _has_index():
+            if _get_row_nums() >= total_num and _has_index():
                 return True
         return False
 

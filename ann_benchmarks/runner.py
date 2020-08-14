@@ -134,7 +134,6 @@ function""" % (definition.module, definition.constructor, definition.arguments)
     distance = D.attrs['distance']
     print('got %d queries' % len(X_test))
 
-    X_train = dataset_transform[distance](X_train)
     X_test = dataset_transform[distance](X_test)
 
     try:
@@ -144,17 +143,19 @@ function""" % (definition.module, definition.constructor, definition.arguments)
 
         t0 = time.time()
         memory_usage_before = algo.get_memory_usage()
-        if not algo.already_fit():
+        train_size = len(D['train'])
+        if not algo.already_fit(train_size):
             if algo.support_batch_fit():
-                train_size = len(D['train'])
                 print('got a train set of size (%d * %d)' % (train_size, len(D['train'][0])))
                 num_per_batch = 1000000
                 for i in range(0, train_size, num_per_batch):
                     end = min(i + num_per_batch, train_size)
                     X_train = numpy.array(D['train'][i:end])
+                    X_train = dataset_transform[distance](X_train)
                     algo.batch_fit(X_train, train_size)
             else:
                 X_train = numpy.array(D['train'])
+                X_train = dataset_transform[distance](X_train)
                 print('got a train set of size (%d * %d)' % X_train.shape)
                 algo.fit(X_train)
         build_time = time.time() - t0

@@ -29,14 +29,17 @@ class MilvusIVFFLAT(BaseANN):
     def support_batch_fit(self):
         return True
 
-    def already_fit(self):
-        status, table_info = self._milvus.get_collection_info(self._table_name)
-        if table_info:
-            row_nums = table_info.get('row_count')
-            if row_nums >= total_num:
-                self._already_nums == row_nums
-                status, index_info = self._milvus.get_index_info(self._table_name)
-                return index_info and len(index_info.params) != 0
+    def already_fit(self, total_num):
+        status, has_table = self._milvus.has_collection(self._table_name)
+        if has_table:
+            status, table_info = self._milvus.get_collection_info(self._table_name)
+            if table_info:
+                row_nums = table_info.get('row_count')
+                if row_nums >= total_num:
+                    # self._already_nums == row_nums
+                    status, index_info = self._milvus.get_index_info(self._table_name)
+                    return index_info and len(index_info.params) != 0
+        print('not already fit yet...')
         return False
 
     def batch_fit(self, X, total_num):

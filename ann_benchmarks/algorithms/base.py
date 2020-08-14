@@ -16,7 +16,7 @@ class BaseANN(object):
     def support_batch_fit(self):
         return False
 
-    def already_fit(self):
+    def already_fit(self, total_num):
         return False
 
     def batch_fit(self, X, total_num):
