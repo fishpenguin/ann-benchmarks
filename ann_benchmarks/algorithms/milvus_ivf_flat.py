@@ -51,7 +51,9 @@ class MilvusIVFFLAT(BaseANN):
         if self._already_nums == 0:
             status, has_table = self._milvus.has_collection(self._table_name)
             if has_table:
+                print("drop table...")
                 self._milvus.drop_collection(self._table_name)
+            print("create table...")
             self._milvus.create_collection({
                 'collection_name': self._table_name, 'dimension': X.shape[1],
                 'index_file_size': 2048, 'metric_type': self._metric}
