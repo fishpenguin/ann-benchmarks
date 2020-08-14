@@ -30,6 +30,7 @@ class MilvusIVFFLAT(BaseANN):
         return True
 
     def already_fit(self, total_num):
+        print("table name: ", self._table_name)
         status, has_table = self._milvus.has_collection(self._table_name)
         if has_table:
             status, table_stats = self._milvus.get_collection_stats(self._table_name)
