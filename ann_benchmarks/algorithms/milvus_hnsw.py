@@ -14,7 +14,7 @@ class MilvusHNSW(MilvusIVFFLAT):
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
         self._method_param = method_param
         self._ef = None
-        self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
+        self._milvus = milvus.Milvus(host='172.16.0.216', port='19531', try_connect=False, pre_ping=False)
         # import uuid
         # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._table_name = dataset.replace('-', '_')
