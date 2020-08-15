@@ -123,7 +123,7 @@ class PaseIVFFLATAsync(AnalyticDBAsync):
 create index on {} \
 using pase_ivfflat(vector) \
 with (clustering_type = {}, distance_type = {}, dimension = {}, base64_encoded = {}, clustering_params = "{},{}")
-'''.format(self._clustering_type, self._distance_type, dimension, 0, self._clustering_sample_ratio, self._k)
+'''.format(self._table_name, self._clustering_type, self._distance_type, dimension, 0, self._clustering_sample_ratio, self._k)
         self._cursor.execute(index_sql)
         self._conn.commit()
 

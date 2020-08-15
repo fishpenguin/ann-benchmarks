@@ -33,6 +33,7 @@ class AnalyticDB(BaseANN):
                 break
             except Exception as e: # retry
                 import time
+                print('retry to connect: {}'.format(host))
                 time.sleep(1)
                 continue
         self._conn.autocommit = True
