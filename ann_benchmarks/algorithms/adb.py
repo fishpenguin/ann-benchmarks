@@ -21,13 +21,20 @@ class AnalyticDB(BaseANN):
         self._password = password
         self._host = host
         self._port = port
-        self._conn = psycopg2.connect(
-            database=self._database,
-            user=self._user,
-            password=self._password,
-            host=self._host,
-            port=self._port,
-        )
+        while True:
+            try:
+                self._conn = psycopg2.connect(
+                    database=self._database,
+                    user=self._user,
+                    password=self._password,
+                    host=self._host,
+                    port=self._port,
+                )
+                break
+            except Exception as e: # retry
+                import time
+                time.sleep(1)
+                continue
         self._conn.autocommit = True
         self._cursor = self._conn.cursor()
         self._table_name = dataset.replace('-', '_')
@@ -44,7 +51,7 @@ class AnalyticDB(BaseANN):
         has_index_sql = "select relhasindex from pg_class where relname = '{}'".format(self._table_name)
         self._cursor.execute(has_index_sql)
         has_index_rows = self._cursor.fetchall()
-        return has_index_rows[0][0]:
+        return has_index_rows[0][0]
 
     def _get_row_nums(self):
         count_sql = "select count(*) from {}".format(self._table_name)
@@ -67,8 +74,8 @@ class AnalyticDB(BaseANN):
         self._conn.commit()
 
     def already_fit(self, total_num):
-        if _table_exist():
-            if _get_row_nums() >= total_num and _has_index():
+        if self._table_exist():
+            if self._get_row_nums() >= total_num and self._has_index():
                 return True
         return False
 
@@ -78,10 +85,10 @@ class AnalyticDB(BaseANN):
     def _fit_with_offset(self, X, offset):
         dimension = X.shape[1]
         if self._already_nums == 0:
-            if _table_exist():
-                _drop_table()
-            _create_table()
-            _create_index(dimension)
+            if self._table_exist():
+                self._drop_table()
+            self._create_table()
+            self._create_index(dimension)
 
         row_nums = len(X)
         step = 10000
@@ -94,11 +101,11 @@ class AnalyticDB(BaseANN):
 
     def batch_fit(self, X, total_num):
         assert self._already_nums < total_num
-        _fit_with_offset(X, self._already_nums)
+        self._fit_with_offset(X, self._already_nums)
         self._already_nums += row_nums
 
     def fit(self, X):
-        _fit_with_offset(X, 0)
+        self._fit_with_offset(X, 0)
 
     def set_query_arguments(self, useless='useless'):
         pass
@@ -117,6 +124,7 @@ class AnalyticDB(BaseANN):
         return 'AnalyticDB for PostgreSQL, machine: %s' % (self._host)
 
     def done(self):
+        self._drop_table()
         self._conn.close()
 
 class AnalyticDBAsync(AnalyticDB):
@@ -152,16 +160,16 @@ class AnalyticDBAsync(AnalyticDB):
             **db_setting
         ))
 
-    async def batch_insert(records):
+    async def batch_insert(self, records):
         async with self._db_pool.acquire() as conn:
             await conn.copy_records_to_table(self._table_name, records=records)
 
     def _fit_with_offset(self, X, offset):
         dimension = X.shape[1]
-        if _table_exist():
-            _drop_table()
-        _create_table()
-        _create_index(dimension)
+        if self._table_exist():
+            self._drop_table()
+        self._create_table()
+        self._create_index(dimension)
 
         async def insert_records():
             row_nums = len(X)
@@ -170,17 +178,17 @@ class AnalyticDBAsync(AnalyticDB):
             for i in range(0, row_nums, step):
                 end = min(i + step, row_nums)
                 rows = [(j + offset, X[j].tolist()) for j in range(i, end)]
-                coros.append(batch_insert(rows))
+                coros.append(self.batch_insert(rows))
             await asyncio.gather(*coros)
 
         self._el.run_until_complete(insert_records())
 
     def fit(self, X):
-        _fit_with_offset(X, 0)
+        self._fit_with_offset(X, 0)
     
     def batch_fit(self, X, total_num):
         assert self._already_nums < total_num
-        _fit_with_offset(X, self._already_nums)
+        self._fit_with_offset(X, self._already_nums)
         self._already_nums += len(X)
 
     def batch_query(self, X, n):

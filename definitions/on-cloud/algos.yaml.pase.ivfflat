@@ -1,0 +1,23 @@
+float:
+  euclidean:
+    pase-ivfflat-async:
+      docker-tag: ann-benchmarks-pase-async
+      module: ann_benchmarks.algorithms.pase
+      constructor: PaseIVFFLATAsync
+      base-args: ["@dataset"]
+      run-groups:
+        k-8192:
+          args: [[8192]]
+          query-args: [[200, 100, 50]]
+        k-4096:
+          args: [[4096]]
+          query-args: [[10, 100, 50]]
+        k-2048:
+          args: [[2048]]
+          query-args: [[10, 100, 50]]
+        k-1024:
+          args: [[1024]]
+          query-args: [[10, 100, 50]]
+        k-512:
+          args: [[512]]
+          query-args: [[200, 100, 50]]

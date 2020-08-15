@@ -47,7 +47,7 @@ def my_sift(fn, out_fn):
 
 def main():
     fn = 'data/sift.tar.gz'
-    out_fn = 'data/sift_128_%d_%d_query.hdf5' % (TRAIN_SIZE, QUERY_NUM)
+    out_fn = 'data/sift-%d-%d.hdf5' % (TRAIN_SIZE, QUERY_NUM)
     print("fn: ", fn, ", out_fn: ", out_fn)
     my_sift(fn, out_fn)
 
