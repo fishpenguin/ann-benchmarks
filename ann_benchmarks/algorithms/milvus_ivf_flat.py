@@ -26,6 +26,11 @@ class MilvusIVFFLAT(BaseANN):
         # batch search
         self._res = None
 
+    def get_memory_usage(self):
+        _, reply = self._milvus._cmd("get_system_info")
+        info = json.loads(reply)
+        return int(info["memory_used"]) / 1024
+
     def support_batch_fit(self):
         return True
 

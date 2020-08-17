@@ -149,10 +149,12 @@ function""" % (definition.module, definition.constructor, definition.arguments)
                 print('got a train set of size (%d * %d)' % (train_size, len(D['train'][0])))
                 num_per_batch = 1000000
                 for i in range(0, train_size, num_per_batch):
+                    print('begin fit {}th vector ...'.format(i))
                     end = min(i + num_per_batch, train_size)
                     X_train = numpy.array(D['train'][i:end])
                     X_train = dataset_transform[distance](X_train)
                     algo.batch_fit(X_train, train_size)
+                    print('fit {}th vector done ...'.format(i))
             else:
                 X_train = numpy.array(D['train'])
                 X_train = dataset_transform[distance](X_train)
@@ -172,10 +174,17 @@ function""" % (definition.module, definition.constructor, definition.arguments)
         for pos, query_arguments in enumerate(query_argument_groups, 1):
             print("Running query argument group %d of %d..." %
                   (pos, len(query_argument_groups)))
+            print("constructor: {}, arguments: {}, query_arguments: {} ...".format(
+                definition.constructor,
+                definition.arguments,
+                query_arguments,
+            ))
             if query_arguments:
                 algo.set_query_arguments(*query_arguments)
+            t0 = time.time()
             descriptor, results = run_individual_query(
                 algo, D['train'], X_test, distance, count, run_count, batch, batchsize)
+            print("query done, time cost: {}".format(time.time() - t0))
             descriptor["build_time"] = build_time
             descriptor["index_size"] = index_size
             descriptor["algo"] = get_algorithm_name(
