@@ -67,9 +67,9 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
                                   for idx in single_results]
             import multiprocessing 
             count_distance_pool = multiprocessing.Pool(multiprocessing.cpu_count())
-            count_distance_pool.map(
+            count_distance_pool.starmap(
                 _count_distance_task,
-                [c, X[c], results[c] for c in range(len(X))]
+                [(c, X[c], results[c]) for c in range(len(X))]
             )
             return [(total / float(len(X)), v) for v in candidates]
 
