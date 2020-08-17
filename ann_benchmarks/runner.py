@@ -61,7 +61,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
                 total = (time.time() - start)
                 print("query done, time cost: {}".format(total))
             results = algo.get_batch_results()
-            candidates = [[0] * count] * len(X_test)
+            candidates = [[0] * count] * len(X)
             def _count_distance_task(c, v, single_results):
                 candidates[c] = [(int(idx), float(metrics[distance]['distance'](v, X_train[idx])))
                                   for idx in single_results]
