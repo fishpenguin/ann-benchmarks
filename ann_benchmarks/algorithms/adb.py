@@ -103,7 +103,7 @@ class AnalyticDB(BaseANN):
     def batch_fit(self, X, total_num):
         assert self._already_nums < total_num
         self._fit_with_offset(X, self._already_nums)
-        self._already_nums += row_nums
+        self._already_nums += len(X)
 
     def fit(self, X):
         self._fit_with_offset(X, 0)
