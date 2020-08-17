@@ -81,8 +81,8 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
             if batchsize >= len(X_test):
                 results = batch_query(X_test)
             else:
-                ress = [batch_query(X_test[batchsize*i:batchsize*(i+1)])
-                            for i in range(int(len(X_test)/batchsize))]
+                ress = [batch_query(X_test[batchsize*j:batchsize*(j+1)])
+                            for j in range(int(len(X_test)/batchsize))]
 
                 tail = len(X_test) % batchsize
                 if tail != 0:
@@ -182,6 +182,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
             if query_arguments:
                 algo.set_query_arguments(*query_arguments)
             t0 = time.time()
+            print("query begin, time: {}".format(t0))
             descriptor, results = run_individual_query(
                 algo, D['train'], X_test, distance, count, run_count, batch, batchsize)
             print("query done, time cost: {}".format(time.time() - t0))
