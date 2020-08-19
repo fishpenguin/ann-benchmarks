@@ -61,16 +61,20 @@ class AnalyticDB(BaseANN):
         return count_rows[0][0]
 
     def _drop_table(self):
-        self._cursor.execute('drop table {}'.format(self._table_name))
+        drop_sql = 'drop table {}'.format(self._table_name)
+        print(drop_sql)
+        self._cursor.execute(drop_sql)
         self._conn.commit()
 
     def _create_table(self):
         create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
+        print(create_sql)
         self._cursor.execute(create_sql)
         self._conn.commit()
 
     def _create_index(self, dimension):
         index_sql = "create index on {} using ann(vector) with (dim={})".format(self._table_name, dimension)
+        print(index_sql)
         self._cursor.execute(index_sql)
         self._conn.commit()
 
@@ -84,13 +88,6 @@ class AnalyticDB(BaseANN):
         return True
 
     def _fit_with_offset(self, X, offset):
-        dimension = X.shape[1]
-        if self._already_nums == 0:
-            if self._table_exist():
-                self._drop_table()
-            self._create_table()
-            self._create_index(dimension)
-
         row_nums = len(X)
         step = 10000
         insert_sql = "insert into {}(id, vector) values %s".format(self._table_name)
@@ -101,12 +98,22 @@ class AnalyticDB(BaseANN):
             self._conn.commit()
 
     def batch_fit(self, X, total_num):
+        if self._already_nums == 0:
+            if self._table_exist():
+                self._drop_table()
+            self._create_table()
         assert self._already_nums < total_num
         self._fit_with_offset(X, self._already_nums)
         self._already_nums += len(X)
+        if self._already_nums >= total_num:
+            self._create_index(X.shape[1])
 
     def fit(self, X):
+        if self._table_exist():
+            self._drop_table()
+        self._create_table()
         self._fit_with_offset(X, 0)
+        self._create_index(X.shape[1])
 
     def set_query_arguments(self, useless='useless'):
         pass
@@ -125,7 +132,7 @@ class AnalyticDB(BaseANN):
         return 'AnalyticDB for PostgreSQL, machine: %s' % (self._host)
 
     def done(self):
-        self._drop_table()
+        # self._drop_table()
         self._conn.close()
 
 class AnalyticDBAsync(AnalyticDB):
@@ -166,12 +173,6 @@ class AnalyticDBAsync(AnalyticDB):
             await conn.copy_records_to_table(self._table_name, records=records)
 
     def _fit_with_offset(self, X, offset):
-        dimension = X.shape[1]
-        if self._table_exist():
-            self._drop_table()
-        self._create_table()
-        self._create_index(dimension)
-
         async def insert_records():
             row_nums = len(X)
             step = 10000
@@ -183,14 +184,6 @@ class AnalyticDBAsync(AnalyticDB):
             await asyncio.gather(*coros)
 
         self._el.run_until_complete(insert_records())
-
-    def fit(self, X):
-        self._fit_with_offset(X, 0)
-    
-    def batch_fit(self, X, total_num):
-        assert self._already_nums < total_num
-        self._fit_with_offset(X, self._already_nums)
-        self._already_nums += len(X)
 
     def batch_query(self, X, n):
         # query_sql = "select id from {} order by vector <-> array$1 limit {}".format(self._table_name, n)
