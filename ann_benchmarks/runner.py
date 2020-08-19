@@ -66,14 +66,13 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
             # def _count_distance_task(c, v, single_results):
             #     candidates[c] = [(int(idx), float(metrics[distance]['distance'](v, X_train[idx])))
             #                       for idx in single_results]
-            # import multiprocessing 
+            # import multiprocessing
             # count_distance_pool = multiprocessing.Pool(multiprocessing.cpu_count())
             # count_distance_pool.starmap(
             #     _count_distance_task,
             #     [(c, X[c], results[c]) for c in range(len(X))]
             # )
-            candidates = [[(int(idx), float(metrics[distance]['distance'](v, X_train[idx])))  # noqa
-                           for idx in single_results]
+            candidates = [[(int(idx), float("-inf")) for idx in single_results]
                           for v, single_results in zip(X, results)]
             return [(total / float(len(X)), v) for v in candidates]
 

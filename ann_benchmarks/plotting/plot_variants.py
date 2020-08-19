@@ -13,7 +13,7 @@ all_plot_variants = {
     # "recall/distcomps": ("k-nn", "distcomps"),
     # "recall_0.8/distcomps": ("k-nn_0.8", "distcomps"),
 
-    "rel/time": ("rel", "qps", True, True),
+    # "rel/time": ("rel", "qps", True, True),
 
     # "recall/candidates": ("k-nn", "candidates"),
     # "recall_0.8/candidates": ("k-nn_0.8", "candidates"),
