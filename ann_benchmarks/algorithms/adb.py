@@ -4,6 +4,7 @@ import psycopg2
 from psycopg2 import extras
 import asyncio
 import asyncpg
+import time
 
 class AnalyticDB(BaseANN):
     def __init__(
@@ -32,7 +33,6 @@ class AnalyticDB(BaseANN):
                 )
                 break
             except Exception as e: # retry
-                import time
                 print('retry to connect: {}'.format(host))
                 time.sleep(1)
                 continue
@@ -75,8 +75,10 @@ class AnalyticDB(BaseANN):
     def _create_index(self, dimension):
         index_sql = "create index on {} using ann(vector) with (dim={})".format(self._table_name, dimension)
         print(index_sql)
+        t = time.time()
         self._cursor.execute(index_sql)
         self._conn.commit()
+        print("create index, time cost: ", time.time() - t)
 
     def already_fit(self, total_num):
         if self._table_exist():
