@@ -248,7 +248,7 @@ def time_wrapper(func):
     return wrapper
 
 
-cached_true_dist = dict()
+cached_true_neighbors = dict()
 
 
 def process(ds):
@@ -256,11 +256,11 @@ def process(ds):
     f = h5py.File(os.path.join(root, fn), 'r+')
     print("--------process pos: %s" % c)
     sdn = get_run_desc(properties)
-    if sdn not in cached_true_dist:
+    if sdn not in cached_true_neighbors:
         dataset = get_dataset(properties["dataset"])
-        cached_true_dist[sdn] = list(dataset["distances"])
+        cached_true_neighbors[sdn] = list(dataset["neighbors"])
     ms = compute_all_metrics(
-        cached_true_dist[sdn], f, properties, args.recompute)
+        cached_true_neighbors[sdn], f, properties, args.recompute)
     idx = "non-batch"
     if properties["batch_mode"]:
         idx = "batch"

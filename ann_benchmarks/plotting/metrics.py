@@ -10,16 +10,31 @@ def epsilon_threshold(data, count, epsilon):
     return data[count - 1] * (1 + epsilon)
 
 
-def get_recall_values(dataset_distances, run_distances, count, threshold,
+# def get_recall_values(dataset_distances, run_distances, count, threshold,
+#                       epsilon=1e-3):
+#     recalls = np.zeros(len(run_distances))  # len of nq
+#     for i in range(len(run_distances)):
+#         t = threshold(dataset_distances[i], count, epsilon)
+#         actual = 0
+#         for d in run_distances[i][:count]:
+#             if d <= t:
+#                 actual += 1
+#         recalls[i] = actual
+#     return (np.mean(recalls) / float(count),
+#             np.std(recalls) / float(count),
+#             recalls)
+
+
+def get_recall_values(dataset_neighbors, run_neighbors, count, threshold,
                       epsilon=1e-3):
-    recalls = np.zeros(len(run_distances))
-    for i in range(len(run_distances)):
-        t = threshold(dataset_distances[i], count, epsilon)
-        actual = 0
-        for d in run_distances[i][:count]:
-            if d <= t:
-                actual += 1
-        recalls[i] = actual
+    recalls = np.zeros(len(run_neighbors))  # len of nq
+    for i in range(len(run_neighbors)):
+        # t = threshold(dataset_distances[i], count, epsilon)
+        inter = np.intersect1d(run_neighbors[i][:count], dataset_neighbors[i][:count])
+        # for d in run_neighbors[i][:count]:
+        #     if d <= t:
+        #         actual += 1
+        recalls[i] = inter.shape[0]
     return (np.mean(recalls) / float(count),
             np.std(recalls) / float(count),
             recalls)
