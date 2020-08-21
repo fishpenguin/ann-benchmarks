@@ -150,6 +150,19 @@ with (clustering_type = {}, distance_type = {}, dimension = {}, base64_encoded =
 
         self._el.run_until_complete(query_async())
 
+    def batch_query_sync(self, X, n):
+        def single_query(i):
+            query_data = ''
+            for j, c in enumerate(X[i]):
+                query_data += str(c) + ','
+            metric_type = '0' # euclidean distance
+            query_data = query_data[:-1] + ':' + str(self._nprobe) + ':' + metric_type
+            sql = "select id from {} order by vector <#> '{}' limit {}".format(self._table_name, query_data, n)
+            self._cursor.execute(sql)
+            return self._cursor.fetchall()
+        
+        self._res = [single_query(i) for i in range(len(X))]
+
     def __str__(self):
         return "pase ivfflat, machine: {}, k: {}, nprobe: {}, clustering_sample_ratio: {}, distance_type: {}, clustering_type: {}".format(
             self._host,
