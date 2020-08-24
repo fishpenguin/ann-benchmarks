@@ -234,8 +234,7 @@ def run_from_cmdline():
         type=int)
     parser.add_argument(
         '--batchsize',
-        default=sys.maxsize,
-        # required=True,
+        required=True,
         type=int)
     parser.add_argument(
         '--batch',
@@ -270,9 +269,10 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit, batc
            '--module', definition.module,
            '--constructor', definition.constructor,
            '--runs', str(runs),
+           '--batchsize', str(batchsize),
            '--count', str(count)]
     if batch:
-        cmd += ['--batchsize', str(batchsize)]
+        # cmd += ['--batchsize', str(batchsize)]
         cmd += ['--batch']
     cmd.append(json.dumps(definition.arguments))
     cmd += [json.dumps(qag) for qag in definition.query_argument_groups]
