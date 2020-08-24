@@ -235,7 +235,7 @@ def run_from_cmdline():
     parser.add_argument(
         '--batchsize',
         default=sys.maxsize,
-        required=True,
+        # required=True,
         type=int)
     parser.add_argument(
         '--batch',
