@@ -11,10 +11,10 @@ class Vearch(BaseANN):
         self._db_name = 'annbench'
         self._table_name = 'annbench'
         self._field = 'field1'
-        self._master_host = 'localhost'
+        self._master_host = '118.31.173.182'
         self._master_port = '443'
-        self._router_host = 'localhost'
-        self._router_port = '88'
+        self._router_host = '118.31.173.182'
+        self._router_port = '80'
         self._master_prefix = 'http://' + self._master_host + ':' + self._master_port
         self._router_prefix = 'http://' + self._router_host + ':' + self._router_port
         self._ncentroids = ncentroids
@@ -26,7 +26,7 @@ class Vearch(BaseANN):
 
     def _create_db(self):
         url = self._master_prefix + '/db/_create'
-        response = requests.put(url, json={'name': self._db_name})
+        response = requests.put(url, json={"name": self._db_name})
         print("post: ", url, ", status: ", response.status_code)
 
     def _drop_db(self):
@@ -109,7 +109,7 @@ class Vearch(BaseANN):
         url = self._router_prefix + '/' + self._db_name + '/' + self._table_name + '/_msearch'
         features = []
         for vector in X:
-            features += vector
+            features += vector.tolist()
         payload = {
             "query": {
                 "sum": [{
@@ -121,6 +121,7 @@ class Vearch(BaseANN):
         }
         response = requests.post(url, json=payload)
         print("query: ", url, ", status: ", response.status_code)
+        self._res = response
 
     def get_batch_results(self):
         return self._res
