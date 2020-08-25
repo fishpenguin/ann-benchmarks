@@ -11,3 +11,4 @@ jinja2==2.10
 progressbar2==3.50.0
 psycopg2-binary
 asyncpg
+requests

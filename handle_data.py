@@ -5,8 +5,21 @@ import struct
 import numpy as np
 import time
 import h5py
+import sys
 
 sift_prefix = '/cifs/data/milvus_paper/sift'
+train_size_map = {
+    "1M": 1000000,
+    "2M": 2000000,
+    "5M": 5000000,
+    "10M": 10000000,
+    "20M": 20000000,
+    "50M": 50000000,
+    "100M": 100000000,
+    "200M": 200000000,
+    "500M": 500000000,
+    "1000M": 1000000000,
+}
 
 def ivecs_read(fname):
     a = np.fromfile(fname, dtype='int32')
@@ -16,12 +29,13 @@ def ivecs_read(fname):
 def fvecs_read(fname):
     return ivecs_read(fname).view('float32')
 
-def bvecs_to_ndarray(bvecs_fn):
+def bvecs_to_ndarray(bvecs_fn, size=sys.maxsize):
     with open(bvecs_fn, 'rb') as f:
         fsize = os.path.getsize(bvecs_fn)
         dimension, = struct.unpack('i', f.read(4))
         print('dimension: ', dimension)
         vector_nums = fsize // (4 + dimension)
+        vector_nums = min(vector_nums, size)
         print('vector_nums: ', vector_nums)
 
         v = np.zeros((vector_nums, dimension))
@@ -45,7 +59,7 @@ def handle_sift_1b(out_fn, size='1000M'):
 
     neighbors = ivecs_read(idx_file)
     distances = fvecs_read(dis_file)
-    train = bvecs_to_ndarray('/data1/workspace/milvus_data/sift_data/bigann_base.bvecs')
+    train = bvecs_to_ndarray('/data1/workspace/milvus_data/sift_data/bigann_base.bvecs', train_size_map[size])
     test = bvecs_to_ndarray('/data1/workspace/milvus_data/sift_data/bigann_query.bvecs')
     dimension = len(test[0])
     assert len(neighbors) == len(distances) == len(test)
@@ -96,6 +110,7 @@ def handle_sift_1b_single(out_fn, size='1000M'):
         print("train_dimension: ", train_dimension)
         assert train_dimension == dimension
         vector_nums = train_size // (4 + train_dimension)
+        vector_nums = min(vector_nums, train_size_map[size])
         print("vector_nums: ", vector_nums)
         train = f.create_dataset(
             'train',
