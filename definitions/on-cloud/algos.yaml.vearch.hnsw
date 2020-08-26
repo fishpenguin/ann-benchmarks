@@ -1,0 +1,12 @@
+float:
+  euclidean:
+    vearch-hnsw:
+      docker-tag: nothing-use-local
+      module: ann_benchmarks.algorithms.vearch
+      constructor: VearchHNSW
+      run-groups:
+        # nlinks, efConstruction, efSearch
+        efConstruction-80:
+          args: [[16], [80], [10, 20, 30, 40, 50, 60, 70]]
+        efConstruction-200:
+          args: [[16], [200], [10, 20, 30, 40, 50, 70, 100, 150, 200]]
