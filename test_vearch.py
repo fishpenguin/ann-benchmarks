@@ -17,12 +17,15 @@ def main():
     dataset = 'sift-10000-10'
     client = VearchIVFPQ(512)
     f = h5py.File('data/' + dataset + '.hdf5', 'r')
+    vectors = numpy.array(f['train'])
+    client.fit(vectors)
     qs = numpy.array(f['test'])
     topk = 100
+    topk = 2
     client.set_query_arguments(200)
     client.batch_query(qs, topk)
     ids = client.get_batch_results()
-    print(ids.text)
+    print(ids)
     stds = numpy.array(f['neighbors'])
     client.done()
 
