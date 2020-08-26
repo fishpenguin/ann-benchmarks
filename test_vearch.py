@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 import h5py
 import numpy
-from ann_benchmarks.algorithms.vearch import Vearch
+from ann_benchmarks.algorithms.vearch import Vearch, VearchIVFPQ
 
 def compute_recall(std, answer):
     hit_nums = 0.0
@@ -15,13 +15,14 @@ def compute_recall(std, answer):
 def main():
     dataset = 'sift-128-euclidean'
     dataset = 'sift-10000-10'
-    client = Vearch(512, 200)
+    client = VearchIVFPQ(512)
     f = h5py.File('data/' + dataset + '.hdf5', 'r')
     qs = numpy.array(f['test'])
     topk = 100
+    client.set_query_arguments(200)
     client.batch_query(qs, topk)
     ids = client.get_batch_results()
-    print(ids)
+    print(ids.text)
     stds = numpy.array(f['neighbors'])
     client.done()
 

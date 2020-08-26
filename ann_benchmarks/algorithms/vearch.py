@@ -1,13 +1,12 @@
 from __future__ import absolute_import
 import json
 import time
-import milvus
 import numpy
 import requests
 from ann_benchmarks.algorithms.base import BaseANN
 
 class Vearch(BaseANN):
-    def __init__(self, ncentroids, nprobe, nsubvector=64, partition_num=1, replica_num=1, metric_type='L2'):
+    def __init__(self):
         self._db_name = 'annbench'
         self._table_name = 'annbench'
         self._field = 'field1'
@@ -17,12 +16,6 @@ class Vearch(BaseANN):
         self._router_port = '80'
         self._master_prefix = 'http://' + self._master_host + ':' + self._master_port
         self._router_prefix = 'http://' + self._router_host + ':' + self._router_port
-        self._ncentroids = ncentroids
-        self._nprobe = nprobe
-        self._nsubvector = 64
-        self._partition_num = partition_num
-        self._replica_num = replica_num
-        self._metric_type = metric_type
 
     def _create_db(self):
         url = self._master_prefix + '/db/_create'
@@ -34,56 +27,13 @@ class Vearch(BaseANN):
         response = requests.delete(url)
         print("delete: ", url, ", status: ", response.status_code)
 
-    def _create_table(self, dimension, ncentroids, nprobe, nsubvector=64, partition_num=1, replica_num=1, metric_type='L2'):
-        payload = {
-            "name": self._table_name,
-            "partition_num": partition_num, # 数据分片数量，设为 PS 的数量比较合适
-            "replica_num": replica_num, # 无副本，测量性能的话没必要高可用？
-            "engine": {
-                "name": "gamma",
-                "ncentroids": ncentroids,
-                "nprobe": nprobe,
-                "metric_type": metric_type,
-                "nsubvector": nsubvector
-            },
-            "properties": {
-                self._field: {
-                    "type": "vector",
-                    "index": True,
-                    "dimension": dimension
-                }
-            }
-        }
-        url = self._master_prefix + '/space/' + self._db_name + '/_create'
-        response = requests.put(url, json=payload)
-        print("create table",
-              ", dimension: ", dimension,
-              ", ncentroids: ", ncentroids,
-              ", nprobe: ", nprobe,
-              ", partition_num: ", partition_num,
-              ", replica_num: ", replica_num,
-              ", metric_type: ", metric_type,
-              ", nsubvector: ", nsubvector)
-        print("status: ", response.status_code)
-
     def _drop_table(self):
         url = self._master_prefix + '/space/' + self._db_name + '/' + self._table_name
         response = requests.delete(url)
         print("delete: ", url, ", status: ", response.status_code)
 
-    def fit(self, X):
+    def _bulk_insert(self, X):
         dimension = X.shape[1]
-        self._create_db()
-        self._create_table(
-            dimension,
-            self._ncentroids,
-            self._nprobe,
-            self._nsubvector,
-            self._partition_num,
-            self._replica_num,
-            self._metric_type,
-        )
-        # bulk insert
         url = self._router_prefix + '/' + self._db_name + '/' + self._table_name + '/_bulk'
         records_len = len(X)
         step = 20000
@@ -101,7 +51,7 @@ class Vearch(BaseANN):
                         "feature": X[j].tolist()
                     }
                 }) + "\n"
-            response = requests.request("POST", headers="Content-Type: application/json", data=docs)
+            response = requests.request("POST", url, headers={"Content-Type": "application/json"}, data=docs)
             print("bulk insert docs: ", url, ", status: ", response.status_code)
 
     def batch_query(self, X, n):
@@ -117,8 +67,13 @@ class Vearch(BaseANN):
                     "feature": features,
                 }]
             },
-            "size": n
+            "size": n,
+            "sort": [{
+                "_score": {"order": "asc"}
+            }]
         }
+        if hasattr(self, "_nprobe"):
+            payload["nprobe"] = self._nprobe
         response = requests.post(url, json=payload)
         print("query: ", url, ", status: ", response.status_code)
         self._res = response
@@ -130,3 +85,60 @@ class Vearch(BaseANN):
         self._drop_table()
         self._drop_db()
         return
+
+class VearchIVFPQ(Vearch):
+    def __init__(self, ncentroids, nsubvector=64, partition_num=1, replica_num=1, metric_type='L2'):
+        Vearch.__init__(self)
+        self._ncentroids = ncentroids
+        self._nsubvector = 64
+        self._partition_num = partition_num
+        self._replica_num = replica_num
+        self._metric_type = metric_type
+
+    def _create_table(self, dimension, ncentroids, nsubvector=64, partition_num=1, replica_num=1, metric_type='L2'):
+        payload = {
+            "name": self._table_name,
+            "partition_num": partition_num, # 数据分片数量，设为 PS 的数量比较合适
+            "replica_num": replica_num, # 无副本，测量性能的话没必要高可用？
+            "engine": {
+                "name": "gamma",
+                "retrieval_type": "IVFPQ",
+                "retrieval_param": {
+                    "ncentroids": ncentroids,
+                    "metric_type": metric_type,
+                    "nsubvector": nsubvector
+                }
+            },
+            "properties": {
+                self._field: {
+                    "type": "vector",
+                    "index": True,
+                    "dimension": dimension
+                }
+            }
+        }
+        url = self._master_prefix + '/space/' + self._db_name + '/_create'
+        response = requests.put(url, json=payload)
+        print("create table",
+              ", dimension: ", dimension,
+              ", ncentroids: ", ncentroids,
+              ", partition_num: ", partition_num,
+              ", replica_num: ", replica_num,
+              ", metric_type: ", metric_type,
+              ", nsubvector: ", nsubvector)
+        print("status: ", response.status_code)
+
+    def fit(self, X):
+        self._create_db()
+        self._create_table(
+            dimension,
+            self._ncentroids,
+            self._nsubvector,
+            self._partition_num,
+            self._replica_num,
+            self._metric_type,
+        )
+        self._bulk_insert(X)
+
+    def set_query_arguments(self, nprobe):
+        self._nprobe = nprobe
