@@ -32,6 +32,31 @@ class Vearch(BaseANN):
         response = requests.delete(url)
         print("delete: ", url, ", status: ", response.status_code)
 
+    def _create_table(self, dimension, retrieval_type, retrieval_param, partition_num=1, replica_num=1):
+        payload = {
+            "name": self._table_name,
+            "partition_num": partition_num, # 数据分片数量，设为 PS 的数量比较合适
+            "replica_num": replica_num, # 无副本，测量性能的话没必要高可用？
+            "engine": {
+                "name": "gamma",
+                "retrieval_type": retrieval_type,
+                "retrieval_param": retrieval_param
+            },
+            "properties": {
+                self._field: {
+                    "type": "vector",
+                    "index": True,
+                    "dimension": dimension
+                }
+            }
+        }
+        url = self._master_prefix + '/space/' + self._db_name + '/_create'
+        response = requests.put(url, json=payload)
+        print("create table: ", url)
+        for key, value in retrieval_param.items():
+            print(key, ": ", value)
+        print("status: ", response.status_code)
+
     def _bulk_insert(self, X):
         dimension = X.shape[1]
         url = self._router_prefix + '/' + self._db_name + '/' + self._table_name + '/_bulk'
@@ -87,58 +112,48 @@ class Vearch(BaseANN):
         return
 
 class VearchIVFPQ(Vearch):
-    def __init__(self, ncentroids, nsubvector=64, partition_num=1, replica_num=1, metric_type='L2'):
+    def __init__(self, ncentroids, nsubvector=64, partition_num=1, replica_num=1, metric_type='L2', nbits_per_idx=8):
         Vearch.__init__(self)
         self._ncentroids = ncentroids
         self._nsubvector = 64
         self._partition_num = partition_num
         self._replica_num = replica_num
         self._metric_type = metric_type
-
-    def _create_table(self, dimension, ncentroids, nsubvector=64, partition_num=1, replica_num=1, metric_type='L2'):
-        payload = {
-            "name": self._table_name,
-            "partition_num": partition_num, # 数据分片数量，设为 PS 的数量比较合适
-            "replica_num": replica_num, # 无副本，测量性能的话没必要高可用？
-            "engine": {
-                "name": "gamma",
-                "retrieval_type": "IVFPQ",
-                "retrieval_param": {
-                    "ncentroids": ncentroids,
-                    "metric_type": metric_type,
-                    "nsubvector": nsubvector
-                }
-            },
-            "properties": {
-                self._field: {
-                    "type": "vector",
-                    "index": True,
-                    "dimension": dimension
-                }
-            }
-        }
-        url = self._master_prefix + '/space/' + self._db_name + '/_create'
-        response = requests.put(url, json=payload)
-        print("create table",
-              ", dimension: ", dimension,
-              ", ncentroids: ", ncentroids,
-              ", partition_num: ", partition_num,
-              ", replica_num: ", replica_num,
-              ", metric_type: ", metric_type,
-              ", nsubvector: ", nsubvector)
-        print("status: ", response.status_code)
+        self._nbits_per_idx = nbits_per_idx
 
     def fit(self, X):
         self._create_db()
-        self._create_table(
-            dimension,
-            self._ncentroids,
-            self._nsubvector,
-            self._partition_num,
-            self._replica_num,
-            self._metric_type,
-        )
+        dimension = X.shape[1]
+        retrieval_param = {
+            "ncentroids": self._ncentroids,
+            "nsubvector": self._nsubvector,
+            "metric_type": self._metric_type,
+            "nbits_per_idx": self._nbits_per_idx,
+        }
+        self._create_table(dimension, "IVFPQ", retrieval_param, self._partition_num, self._replica_num)
         self._bulk_insert(X)
 
     def set_query_arguments(self, nprobe):
         self._nprobe = nprobe
+
+class VearchHNSW(Vearch):
+    def __init__(self, nlinks, efConstruction, efSearch, partition_num=1, replica_num=1, metric_type='L2'):
+        Vearch.__init__(self)
+        self._partition_num = partition_num
+        self._replica_num = replica_num
+        self._metric_type = metric_type
+        self._nlinks = nlinks
+        self._efConstruction = efConstruction
+        self._efSearch = efSearch
+
+    def fit(self, X):
+        self._create_db()
+        dimension = X.shape[1]
+        retrieval_param = {
+            "metric_type": self._metric_type,
+            "nlinks": self._nlinks,
+            "efConstruction": self._efConstruction,
+            "efSearch": self._efSearch
+        }
+        self._create_table(dimension, "HNSW", retrieval_param, self._partition_num, self._replica_num)
+        self._bulk_insert(X)
