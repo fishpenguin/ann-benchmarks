@@ -9,8 +9,8 @@ RUN wget https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz && \
     cd .. && rm -rf OpenBLAS-0.3.9 && rm v0.3.9.tar.gz
 
 ENV HTTP_PROXY=http://proxy.zilliz.tech/proxy.pac
-RUN wget http://raw.githubusercontent.com/milvus-io/milvus/master/core/conf/demo/server_config.yaml
-# RUN sed -i 's/cpu_cache_capacity: 16/cpu_cache_capacity: 4/' server_config.yaml  # otherwise my Docker blows up
+RUN wget https://raw.githubusercontent.com/milvus-io/milvus/v0.10.0/core/conf/demo/server_config.yaml
+# RUN sed -i 's/cache_size: 4GB/cache_size: 10GB/' server_config.yaml
 RUN sed -i 's/auto_flush_interval: 1/auto_flush_interval: 3600/' server_config.yaml  # otherwise my Docker blows up
 RUN mv server_config.yaml /var/lib/milvus/conf/server_config.yaml
 
