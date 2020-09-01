@@ -1,0 +1,44 @@
+float:
+  euclidean:
+    milvus-ivf-pq-32:
+      docker-tag: ann-benchmarks-milvus
+      module: ann_benchmarks.algorithms.milvus_ivf_pq
+      constructor: MilvusIVFPQ
+      base-args: ["@metric", "@dataset"]
+      run-groups:
+        nlist-8192:
+          args: [["IVF_PQ"], [8192], [32]]
+          query-args: [[200, 100, 50]]
+        nlist-4096:
+          args: [["IVF_PQ"], [4096], [32]]
+          query-args: [[100, 50, 10]]
+        nlist-2048:
+          args: [["IVF_PQ"], [2048], [32]]
+          query-args: [[100, 50, 10]]
+        nlist-1024:
+          args: [["IVF_PQ"], [1024], [32]]
+          query-args: [[100, 50, 10]]
+	      nlist-512:
+          args: [["IVF_PQ"], [512], [32]]
+          query-args: [[200, 100, 50]]
+    milvus-ivf-pq-64:
+      docker-tag: ann-benchmarks-milvus
+      module: ann_benchmarks.algorithms.milvus_ivf_pq
+      constructor: MilvusIVFPQ
+      base-args: ["@metric", "@dataset"]
+      run-groups:
+        nlist-8192:
+          args: [["IVF_PQ"], [8192], [64]]
+          query-args: [[200, 100, 50]]
+        nlist-4096:
+          args: [["IVF_PQ"], [4096], [64]]
+          query-args: [[100, 50, 10]]
+        nlist-2048:
+          args: [["IVF_PQ"], [2048], [64]]
+          query-args: [[100, 50, 10]]
+        nlist-1024:
+          args: [["IVF_PQ"], [1024], [64]]
+          query-args: [[100, 50, 10]]
+	      nlist-512:
+          args: [["IVF_PQ"], [512], [64]]
+          query-args: [[200, 100, 50]]
