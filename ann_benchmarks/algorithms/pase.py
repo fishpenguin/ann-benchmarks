@@ -35,7 +35,7 @@ class PaseHNSWAsync(AnalyticDBAsync):
         self._table_name += postfix
 
     def _create_table(self):
-        create_sql = "create table {} (id serial primary key, vector float4[])".format(self._table_name)
+        create_sql = "create table {} (id int, vector float4[])".format(self._table_name)
         print(create_sql)
         self._cursor.execute(create_sql)
         self._conn.commit()
@@ -113,7 +113,7 @@ class PaseIVFFLATAsync(AnalyticDBAsync):
         self._table_name += postfix
 
     def _create_table(self):
-        create_sql = "create table {} (id serial primary key, vector float4[])".format(self._table_name)
+        create_sql = "create table {} (id int, vector float4[])".format(self._table_name)
         print(create_sql)
         self._cursor.execute(create_sql)
         self._conn.commit()

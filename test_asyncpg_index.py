@@ -40,7 +40,7 @@ class AnalyticDB(BaseANN):
         assert len(exist_rows) == 1
         if exist_rows[0][0] != 0:
             return # already in database, skip to save time
-        create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
+        create_sql = "create table {} (id int, vector real[])".format(self._table_name)
         dimension = X.shape[1]
         index_sql = "create index on {} using ann(vector) with (dim={})".format(self._table_name, dimension)
         self._cursor.execute(create_sql)
@@ -113,7 +113,7 @@ class AnalyticDBAsync(AnalyticDB):
             self._conn.commit()
             # return # already in database, skip to save time
 
-        create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
+        create_sql = "create table {} (id int, vector real[])".format(self._table_name)
         dimension = len(X[0])
         index_sql = "create index on {} using ann(vector) with (dim={})".format(self._table_name, dimension)
         self._cursor.execute(create_sql)

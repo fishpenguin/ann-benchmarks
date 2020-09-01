@@ -67,7 +67,7 @@ class AnalyticDB(BaseANN):
         self._conn.commit()
 
     def _create_table(self):
-        create_sql = "create table {} (id serial primary key, vector real[])".format(self._table_name)
+        create_sql = "create table {} (id int, vector real[])".format(self._table_name)
         print(create_sql)
         self._cursor.execute(create_sql)
         self._conn.commit()
