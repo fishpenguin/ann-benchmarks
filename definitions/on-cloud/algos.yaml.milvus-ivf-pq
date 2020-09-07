@@ -18,7 +18,7 @@ float:
         nlist-1024:
           args: [["IVF_PQ"], [1024], [32]]
           query-args: [[100, 50, 10]]
-	      nlist-512:
+        nlist-512:
           args: [["IVF_PQ"], [512], [32]]
           query-args: [[200, 100, 50]]
     milvus-ivf-pq-64:
@@ -39,6 +39,6 @@ float:
         nlist-1024:
           args: [["IVF_PQ"], [1024], [64]]
           query-args: [[100, 50, 10]]
-	      nlist-512:
+        nlist-512:
           args: [["IVF_PQ"], [512], [64]]
           query-args: [[200, 100, 50]]
