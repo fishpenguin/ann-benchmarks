@@ -35,7 +35,7 @@ def bvecs_to_ndarray(bvecs_fn, size=sys.maxsize):
         
         return v
 
-def handle_deep_1b(out_fn, train_num, query_num, distance):
+def handle_deep_1b(out_fn, train_num, query_num, distance, count=100):
     import sklearn.preprocessing
     f = h5py.File(out_fn, 'w')
     f.attrs['distance'] = distance
@@ -46,8 +46,6 @@ def handle_deep_1b(out_fn, train_num, query_num, distance):
     if distance == 'euclidean':
         test = sklearn.preprocessing.normalize(test, axis=1, norm='l2')
     dimension = len(test[0])
-    assert len(ground_truth) == len(test)
-    count = len(ground_truth[0]) # top k
     f.create_dataset(
         'test',
         (len(test), dimension),
@@ -86,7 +84,7 @@ def handle_deep_1b(out_fn, train_num, query_num, distance):
     distances = f.create_dataset('distances', (len(test), count), dtype='f')
     from ann_benchmarks import datasets
     from ann_benchmarks.algorithms.bruteforce import BruteForceBLAS
-    bf = BruteForceBLAS(distances, precision=train.dtype)
+    bf = BruteForceBLAS(distance, precision=train.dtype)
     train = datasets.dataset_transform[distance](train)
     test = datasets.dataset_transform[distance](test)
     bf.fit(train)
@@ -101,9 +99,9 @@ def handle_deep_1b(out_fn, train_num, query_num, distance):
 
 def main():
     euclidean_out_fn = '/cifs/data/milvus_paper/deep1b/deep-10m-euclidean.hdf5'
-    handle_deep_1b(out_fn, 10000000, 10000, 'euclidean')
+    handle_deep_1b(euclidean_out_fn, 10000000, 10000, 'euclidean')
     angular_out_fn = '/cifs/data/milvus_paper/deep1b/deep-10m-angular.hdf5'
-    handle_deep_1b(out_fn, 10000000, 10000, 'angular')
+    handle_deep_1b(angular_out_fn, 10000000, 10000, 'angular')
 
 if __name__ == "__main__":
     main()
