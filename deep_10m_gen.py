@@ -87,7 +87,7 @@ def handle_deep_1b(out_fn, train_num, query_num, distance, count=100):
     bf = BruteForceBLAS(distance, precision=train.dtype)
     train = datasets.dataset_transform[distance](train)
     test = datasets.dataset_transform[distance](test)
-    bf.fit(train)
+    bf.fit(np.array(train))
     for i, x in enumerate(test):
         if i % 1000 == 0:
             print('%d/%d...' % (i, len(test)))
@@ -98,6 +98,9 @@ def handle_deep_1b(out_fn, train_num, query_num, distance, count=100):
     f.close()
 
 def main():
+    # for test
+    handle_deep_1b('/cifs/data/milvus_paper/deep1b/deep-100000-1000-euclidean.hdf5', 100000, 1000, 'euclidean')
+    handle_deep_1b('/cifs/data/milvus_paper/deep1b/deep-100000-1000-angular.hdf5', 100000, 1000, 'angular')
     euclidean_out_fn = '/cifs/data/milvus_paper/deep1b/deep-10m-euclidean.hdf5'
     handle_deep_1b(euclidean_out_fn, 10000000, 10000, 'euclidean')
     angular_out_fn = '/cifs/data/milvus_paper/deep1b/deep-10m-angular.hdf5'

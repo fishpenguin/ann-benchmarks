@@ -2,7 +2,7 @@ float:
   euclidean:
     vearch-ivfpq:
       docker-tag: nothing-use-local
-      module: ann_benchmarks.algorithms.vearch
+      module: ann_benchmarks.algorithms.vearch_320
       constructor: VearchIVFPQ
       run-groups:
         nlist-8192:
@@ -20,3 +20,6 @@ float:
         nlist-512:
           args: [[512]]
           query-args: [[100, 50, 200]]
+        for-test:
+          args: [[32,64,128,256,512,1024,2048,4096,8192]]
+          query-args: [[1, 5, 10, 50, 100, 200]]
