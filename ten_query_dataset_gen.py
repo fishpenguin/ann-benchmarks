@@ -2,8 +2,8 @@ import tarfile
 import h5py
 from ann_benchmarks import datasets
 
-TRAIN_SIZE = 10000
-QUERY_NUM = 10
+TRAIN_SIZE = 100000
+QUERY_NUM = 1000
 
 def my_write_output(train, test, out_fn, distance, point_type='float', count=100):
     from ann_benchmarks.algorithms.bruteforce import BruteForceBLAS
