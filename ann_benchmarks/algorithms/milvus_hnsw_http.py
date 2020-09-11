@@ -123,8 +123,8 @@ class MilvusHttpHNSW(MilvusIVFFLAT):
         search_param = {
             "ef": self._ef
         }
-        response = self._milvus.search(collection_name=self._table_name, query_records=[v], top_k=n, params=search_param)
-        id_array = response.id_array
+        status, result = self._milvus.search(collection_name=self._table_name, query_records=[v], top_k=n, params=search_param)
+        id_array = result.id_array
         return id_array[0]
 
     def handle_query_list_result(self, query_list):
