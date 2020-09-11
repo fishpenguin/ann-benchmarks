@@ -125,4 +125,4 @@ class AliESAsyncHnsw(BaseANN):
         self._loop.run_until_complete(self._es.close())
 
     def __str__(self):
-        return "Elasticsearch(%s, %s)" % ("euclidean", self._index_name)
+        return "Elasticsearch({}, param: {}, search param: {})".format("euclidean", self._method_param, self._ef)
