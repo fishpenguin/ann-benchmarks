@@ -16,8 +16,8 @@ class AliESAsyncHnsw(BaseANN):
         self._ef = None
         self._field = "vec"
         # self._es = Elasticsearch([ip], port=port)
-        self._es = AsyncElasticsearch("http://es-cn-oew1t7131000y8424.public.elasticsearch.aliyuncs.com:9200",
-                                      http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeou=True, timeout=30)
+        self._es = AsyncElasticsearch("http://es-cn-oew1t7131000y8424.elasticsearch.aliyuncs.com:9200",
+                                      http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeout=True, timeout=30)
         self._loop = asyncio.get_event_loop()
 
     def get_memory_usage(self):
