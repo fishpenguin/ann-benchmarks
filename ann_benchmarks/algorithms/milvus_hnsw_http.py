@@ -7,7 +7,7 @@ from ann_benchmarks.algorithms.base import BaseANN
 from ann_benchmarks.algorithms.milvus_ivf_flat import MilvusIVFFLAT
 
 
-class MilvusHNSW(MilvusIVFFLAT):
+class MilvusHttpHNSW(MilvusIVFFLAT):
     def __init__(self, metric, dataset, method_param):
         self._metric = metric
 
