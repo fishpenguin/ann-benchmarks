@@ -123,27 +123,12 @@ class MilvusHttpHNSW(MilvusIVFFLAT):
         search_param = {
             "ef": self._ef
         }
-        future = self._milvus.search(collection_name=self._table_name, query_records=[v], top_k=n, params=search_param, _async=True)
-        return future
+        response = self._milvus.search(collection_name=self._table_name, query_records=[v], top_k=n, params=search_param)
+        id_array = response.id_array
+        return id_array[0]
 
     def handle_query_list_result(self, query_list):
-        handled_result = []
-        t0 = time.time()
-        for index, query in enumerate(query_list):
-            total, v, future = query
-            status, results = future.result()
-            if not status.OK():
-                raise Exception("[Search] search failed: {}".format(status.message))
-
-            if not results:
-                raise Exception("Query result is empty")
-            # r = [self._milvus_id_to_index[z.id] for z in results[0]]
-            results_ids = []
-            for result in results[0]:
-                results_ids.append(result.id)
-            handled_result.append((total, v, results_ids))
-            # return results_ids
-        return time.time() - t0, handled_result
+        return 0, query_list
 
     def batch_query(self, X, n):
         status, results = self._milvus.search(collection_name=self._table_name, query_records=X, top_k=n, params={"ef": self._ef})
