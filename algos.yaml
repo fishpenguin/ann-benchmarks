@@ -170,7 +170,7 @@ float:
       docker-tag: ann-benchmarks-milvus
       module: ann_benchmarks.algorithms.milvus_hnsw
       constructor: MilvusHNSW
-      base-args: ["@metric", "@dataset"]
+      base-args: ["@metric"]
       run-groups:
         M-4:
           arg-groups:
@@ -204,11 +204,11 @@ float:
           arg-groups:
             - {"M": 64,  "efConstruction": 500}
           query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
-    milvus-hnsw-2C-8G-http:
+    milvus-hnsw-http:
       docker-tag: ann-benchmarks-milvus
       module: ann_benchmarks.algorithms.milvus_hnsw_http
       constructor: MilvusHttpHNSW
-      base-args: ["@metric", "@dataset"]
+      base-args: ["@metric"]
       run-groups:
         M-4:
           arg-groups:
