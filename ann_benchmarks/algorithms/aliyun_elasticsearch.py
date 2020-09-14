@@ -15,7 +15,7 @@ class AliESHNSW(BaseANN):
         self._field = "vec"
         # self._es = Elasticsearch([ip], port=port)
         self._es = Elasticsearch("http://es-cn-oew1t7131000y8424.public.elasticsearch.aliyuncs.com:9200",
-                                 http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeou=True, timeout=30)
+                                 http_auth=("******", "********"), max_retries=5, retry_on_timeou=True, timeout=30)
 
     def get_memory_usage(self):
         if not self._es.indices.exists(index=self._index_name):
