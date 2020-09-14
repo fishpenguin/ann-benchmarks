@@ -124,7 +124,7 @@ class MilvusHttpHNSW(MilvusIVFFLAT):
             "ef": self._ef
         }
         status, result = self._milvus.search(collection_name=self._table_name, query_records=[v], top_k=n, params=search_param)
-        return [r.id for r in result]
+        return [r.id for r in result[0]]
 
     def handle_query_list_result(self, query_list):
         return 0, query_list
