@@ -41,6 +41,20 @@ class AnalyticDB(BaseANN):
         self._table_name = dataset.replace('-', '_')
         self._already_nums = 0 # batch fit
 
+    def _get_database_size_of_disk(self):
+        # pg 可以统计数据库占用空间、表占用空间、索引占用空间
+        # 因为我们实验只会在 postgres 这个数据库里进行操作
+        # 统计数据库占用空间就行了
+        sql = "select pg_database_size('%s')" % (self._database)
+        print(sql)
+        self._cursor.execute(sql)
+        database_size_of_disk = self._cursor.fetch()
+        print(database_size_of_disk[0])
+        return database_size_of_disk[0] / 1024
+
+    def get_memory_usage(self):
+        return self._get_database_size_of_disk()
+
     def _table_exist(self):
         exist_sql = "select count(*) from pg_class where relname = '{}'".format(self._table_name)
         self._cursor.execute(exist_sql)

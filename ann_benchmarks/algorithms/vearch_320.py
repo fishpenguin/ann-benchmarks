@@ -128,6 +128,18 @@ class Vearch(BaseANN):
         print("query: ", url, ", status: ", response.status_code)
         _check_response(response)
         if response.json():
+            # print(response.json())
+            def _print_all_key(kv, indent=0):
+                if not isinstance(kv, dict):
+                    return
+                for key, value in kv.items():
+                    print('\t' * indent + key + ':')
+                    if isinstance(value, dict):
+                        _print_all_key(value, indent + 1)
+                    if isinstance(value, list) and value:
+                        _print_all_key(value[0], indent + 1)
+            _print_all_key(response.json())
+
             self._res = [[int(hit['_id']) for hit in results['hits']['hits']]
                          for results in response.json()['results']]
 
@@ -179,7 +191,8 @@ class VearchIVFPQ(Vearch):
                 self._field: {
                     "type": "vector",
                     "index": True,
-                    "dimension": dimension
+                    "dimension": dimension,
+                    "store_type": "MemoryOnly",
                 }
             }
         }
@@ -219,12 +232,90 @@ class VearchIVFPQ(Vearch):
                 ", ncentroids: " + str(self._ncentroids) +
                 ", nprobe: " + str(self._nprobe) +
                 ", nsubvector: " + str(self._nsubvector) +
-                ", master: " + self._master_prefix +
-                ", router: " + self._router_prefix +
-                ", partition_num: " + str(self._partition_num) +
-                ", replica_num: " + str(self._replica_num) +
+                # ", master: " + self._master_prefix +
+                # ", router: " + self._router_prefix +
+                # ", partition_num: " + str(self._partition_num) +
+                # ", replica_num: " + str(self._replica_num) +
                 ", metric_type: " + str(self._metric_type) +
                 ", nbits_per_idx: " + str(self._nbits_per_idx))
+
+class VearchIVFFLAT(Vearch):
+    def __init__(self, ncentroids, partition_num=1, replica_num=1, metric_type='L2'):
+        Vearch.__init__(self)
+        self._ncentroids = ncentroids
+        self._partition_num = partition_num
+        self._replica_num = replica_num
+        self._metric_type = metric_type
+
+    def fit(self, X):
+        self._create_db()
+        max_size = X.shape[0]
+        index_size = min(max_size, self._ncentroids * 128)
+        dimension = X.shape[1]
+        retrieval_type = "IVFFLAT"
+        retrieval_param = {
+            "ncentroids": self._ncentroids,
+            "metric_type": self._metric_type,
+            # "nprobe": 80, # vearch default, what a shit here!
+        }
+        payload = {
+            "name": self._table_name,
+            "partition_num": self._partition_num,
+            "replica_num": self._replica_num,
+            "engine": {
+                "name": "gamma",
+                "index_size": index_size,
+                "max_size": max_size,
+                "retrieval_type": retrieval_type,
+                "retrieval_param": retrieval_param
+            },
+            "properties": {
+                self._field: {
+                    "type": "vector",
+                    "index": True,
+                    "dimension": dimension,
+                    "store_type": "RocksDB",
+                }
+            }
+        }
+        self._create_table(payload)
+        self._bulk_insert(X)
+
+    def set_query_arguments(self, nprobe):
+        self._nprobe = min(nprobe, self._ncentroids)
+
+    def batch_query(self, X, n):
+        features = []
+        for vector in X:
+            features += vector.tolist()
+        payload = {
+            "query": {
+                "sum": [{
+                    "field": self._field,
+                    "feature": features,
+                }]
+            },
+            "size": n,
+            "sort": [{
+                "_score": {"order": "asc"}
+            }],
+            "retrieval_params": {
+                "parallel_on_queries": 0,
+                "nprobe": self._nprobe,
+                "metric_type": "L2"
+            }
+        }
+        self._batch_query_with_payload(payload)
+
+    def __str__(self):
+        return ("VearchIVFFLAT" +
+                ", ncentroids: " + str(self._ncentroids) +
+                ", nprobe: " + str(self._nprobe) +
+                # ", master: " + self._master_prefix +
+                # ", router: " + self._router_prefix +
+                # ", partition_num: " + str(self._partition_num) +
+                # ", replica_num: " + str(self._replica_num) +
+                ", metric_type: " + str(self._metric_type))
 
 class VearchHNSW(Vearch):
     def __init__(self, nlinks, efConstruction, partition_num=1, replica_num=1, metric_type='L2'):
@@ -245,7 +336,7 @@ class VearchHNSW(Vearch):
             "nlinks": self._nlinks,
             "efConstruction": self._efConstruction,
             "metric_type": self._metric_type,
-            "efSearch": 64,
+            # "efSearch": 64, # vearch default, what a shit here!
         }
         payload = {
             "name": self._table_name,
@@ -301,8 +392,8 @@ class VearchHNSW(Vearch):
                 ", nlinks: " + str(self._nlinks) +
                 ", efConstruction: " + str(self._efConstruction) +
                 ", efSearch: " + str(self._efSearch) +
-                ", master: " + self._master_prefix +
-                ", router: " + self._router_prefix +
-                ", partition_num: " + str(self._partition_num) +
-                ", replica_num: " + str(self._replica_num) +
+                # ", master: " + self._master_prefix +
+                # ", router: " + self._router_prefix +
+                # ", partition_num: " + str(self._partition_num) +
+                # ", replica_num: " + str(self._replica_num) +
                 ", metric_type: " + str(self._metric_type))

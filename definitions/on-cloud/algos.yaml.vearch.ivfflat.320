@@ -1,0 +1,25 @@
+float:
+  euclidean:
+    vearch-ivfflat:
+      docker-tag: nothing-use-local
+      module: ann_benchmarks.algorithms.vearch_320
+      constructor: VearchIVFFLAT
+      run-groups:
+        nlist-8192:
+          args: [[8192]]
+          query-args: [[200, 100, 50]]
+        nlist-4096:
+          args: [[4096]]
+          query-args: [[100, 50, 10]]
+        nlist-2048:
+          args: [[2048]]
+          query-args: [[100, 50, 10]]
+        nlist-1024:
+          args: [[1024]]
+          query-args: [[100, 50, 10]]
+        nlist-512:
+          args: [[512]]
+          query-args: [[100, 50, 200]]
+        for-test:
+          args: [[32,64,128,256,512,1024,2048,4096,8192]]
+          query-args: [[1, 5, 10, 50, 100, 200]]

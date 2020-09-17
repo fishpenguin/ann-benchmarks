@@ -31,7 +31,7 @@ class PaseHNSWAsync(AnalyticDBAsync):
         )
         self._base_nb_num = base_nb_num
         self._ef_build = ef_build
-        postfix = '_' + str(base_nb_num) + '_' + str(ef_build)
+        postfix = '_' + str(base_nb_num) + '_' + str(ef_build) + '_hnsw'
         self._table_name += postfix
 
     def _create_table(self):
@@ -109,7 +109,7 @@ class PaseIVFFLATAsync(AnalyticDBAsync):
         self._k = k
         self._clustering_type = clustering_type
         self._distance_type = distance_type
-        postfix = '_' + str(clustering_sample_ratio) + '_' + str(k) + '_' + str(clustering_type) + '_' + str(distance_type)
+        postfix = '_' + str(clustering_sample_ratio) + '_' + str(k) + '_' + str(clustering_type) + '_' + str(distance_type) + '_ivfflat'
         self._table_name += postfix
 
     def _create_table(self):
