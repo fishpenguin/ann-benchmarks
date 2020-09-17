@@ -33,7 +33,11 @@ class AliESHNSW(BaseANN):
         # stats = self._es.indices.stats(index=self._index_name)
         return int(stats["_all"]["total"]["store"]["size_in_bytes"]) / 1024
 
+    def support_batch_fit(self):
+        return True
+
     def fit(self, X):
+        count = X.shape[0]
         dim = X.shape[1]
         # print("dims: ", dims)
         _index_body = {
@@ -78,8 +82,14 @@ class AliESHNSW(BaseANN):
 
         success, failed = self._loop.run_until_complete(
             async_bulk(self._es, gen_action(), index=self._index_name, raise_on_error=True))
+        if success < count or failed > 0:
+            raise Exception("Create index failed. Total {} vectors, {} success, {} fail".format(count, success, failed))
+
         # success, _ = bulk(self._es, bulk_records, index=self._index_name, raise_on_error=True)
         self._loop.run_until_complete(self._es.indices.refresh(index=self._index_name))  # refresh to update index
+
+    def batch_fit(self, X, total_num):
+        self.fit(X)
 
     def set_query_arguments(self, ef):
         self._ef = ef
