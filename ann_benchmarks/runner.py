@@ -30,7 +30,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
 
     best_search_time = float('inf')
     for i in range(run_count):
-        print('Run %d/%d...' % (i + 1, run_count))
+        print('Run %d/%d...' % (i + 1, run_count), flush=True)
         # a bit dumb but can't be a scalar since of Python's scoping rules
         n_items_processed = [0]
 
@@ -56,10 +56,10 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
                 total = (time.time() - start)
             else:
                 start = time.time()
-                print("query start, start time: {}".format(start))
+                print("query start, start time: {}".format(start), flush=True)
                 algo.batch_query(X, count)
                 total = (time.time() - start)
-                print("query done, time cost: {}".format(total))
+                print("query done, time cost: {}".format(total), flush=True)
             results = algo.get_batch_results()
             # global _count_distance_task # ugly but work
             # def _count_distance_task(c, v, single_results):
@@ -82,10 +82,10 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
             n_items_processed[0] += 1
             if n_items_processed[0] % 1000 == 0:
                 print('Processed %d/%d queries...' %
-                      (n_items_processed[0], len(X_test)))
+                      (n_items_processed[0], len(X_test)), flush=True)
             if len(candidates) > count:
                 print('warning: algorithm %s returned %d results, but count'
-                      ' is only %d)' % (algo, len(candidates), count))
+                      ' is only %d)' % (algo, len(candidates), count), flush=True)
             return (total, candidates)
 
         if batch:
@@ -111,7 +111,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         total_time = sum(time for time, _ in results) + handle_time
         total_candidates = sum(len(candidates) for _, candidates in results)
         search_time = total_time / len(X_test)
-        print("search_time: ", search_time)
+        print("search_time: ", search_time, flush=True)
         avg_candidates = total_candidates / len(X_test)
         best_search_time = min(best_search_time, search_time)
 
@@ -143,7 +143,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
     D = get_dataset(dataset)
     X_test = numpy.array(D['test'])
     distance = D.attrs['distance']
-    print('got %d queries' % len(X_test))
+    print('got %d queries' % len(X_test), flush=True)
 
     X_test = dataset_transform[distance](X_test)
 
@@ -157,24 +157,24 @@ function""" % (definition.module, definition.constructor, definition.arguments)
         train_size = len(D['train'])
         if not algo.already_fit(train_size):
             if algo.support_batch_fit():
-                print('got a train set of size (%d * %d)' % (train_size, len(D['train'][0])))
+                print('got a train set of size (%d * %d)' % (train_size, len(D['train'][0])), flush=True)
                 num_per_batch = 1000000
                 for i in range(0, train_size, num_per_batch):
-                    print('begin fit {}th vector ...'.format(i))
+                    print('begin fit {}th vector ...'.format(i), flush=True)
                     end = min(i + num_per_batch, train_size)
                     X_train = numpy.array(D['train'][i:end])
                     X_train = dataset_transform[distance](X_train)
                     algo.batch_fit(X_train, train_size)
-                    print('fit {}th vector done ...'.format(i))
+                    print('fit {}th vector done ...'.format(i), flush=True)
             else:
                 X_train = numpy.array(D['train'])
                 X_train = dataset_transform[distance](X_train)
-                print('got a train set of size (%d * %d)' % X_train.shape)
+                print('got a train set of size (%d * %d)' % X_train.shape, flush=True)
                 algo.fit(X_train)
         build_time = time.time() - t0
         index_size = algo.get_memory_usage() - memory_usage_before
-        print('Built index in', build_time)
-        print('Index size: ', index_size)
+        print('Built index in', build_time, flush=True)
+        print('Index size: ', index_size, flush=True)
 
         query_argument_groups = definition.query_argument_groups
         # Make sure that algorithms with no query argument groups still get run
@@ -184,19 +184,19 @@ function""" % (definition.module, definition.constructor, definition.arguments)
 
         for pos, query_arguments in enumerate(query_argument_groups, 1):
             print("Running query argument group %d of %d..." %
-                  (pos, len(query_argument_groups)))
+                  (pos, len(query_argument_groups)), flush=True)
             print("constructor: {}, arguments: {}, query_arguments: {} ...".format(
                 definition.constructor,
                 definition.arguments,
                 query_arguments,
-            ))
+            ), flush=True)
             if query_arguments:
                 algo.set_query_arguments(*query_arguments)
             t0 = time.time()
-            print("query begin, time: {}".format(t0))
+            print("query begin, time: {}".format(t0), flush=True)
             descriptor, results = run_individual_query(
                 algo, D['train'], X_test, distance, count, run_count, batch, batchsize)
-            print("query done, time cost: {}".format(time.time() - t0))
+            print("query done, time cost: {}".format(time.time() - t0), flush=True)
             descriptor["build_time"] = build_time
             descriptor["index_size"] = index_size
             descriptor["algo"] = get_algorithm_name(
@@ -205,7 +205,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
             store_results(dataset, count, definition,
                           query_arguments, descriptor, results, batch)
     except Exception as e:
-        print("Occur an error: during run {}".format(str(e)))
+        print("Occur an error: during run {}".format(str(e)), flush=True)
     finally:
         algo.done()
 
@@ -277,14 +277,14 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit, batc
         cmd += ['--batch']
     cmd.append(json.dumps(definition.arguments))
     cmd += [json.dumps(qag) for qag in definition.query_argument_groups]
-    print('Running command', cmd)
+    print('Running command', cmd, flush=True)
     client = docker.from_env()
     if mem_limit is None:
         mem_limit = psutil.virtual_memory().available
-    print('Memory limit:', mem_limit)
+    print('Memory limit:', mem_limit, flush=True)
     if batch:
         cpu_limit = "0-%d" % (multiprocessing.cpu_count() - 1)
-    print('Running on CPUs:', cpu_limit)
+    print('Running on CPUs:', cpu_limit, flush=True)
 
     logic_cpu_num = psutil.cpu_count(logical=True)
     omp_thread = logic_cpu_num * 2 // 3 if logic_cpu_num > 1 else 1
@@ -306,7 +306,7 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit, batc
 
     def stream_logs():
         for line in container.logs(stream=True):
-            print(colors.color(line.decode().rstrip(), fg='blue'))
+            print(colors.color(line.decode().rstrip(), fg='blue'), flush=True)
 
     if sys.version_info >= (3, 0):
         t = threading.Thread(target=stream_logs, daemon=True)
@@ -321,7 +321,7 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit, batc
         if exit_code == 0:
             return
         elif exit_code is not None:
-            print(colors.color(container.logs().decode(), fg='red'))
+            print(colors.color(container.logs().decode(), fg='red'), flush=True)
             raise Exception('Child process raised exception %d' % exit_code)
 
     finally:

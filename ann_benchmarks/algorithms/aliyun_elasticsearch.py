@@ -11,7 +11,7 @@ class AliESHNSW(BaseANN):
     def __init__(self, metric, dataset, method_param):
         self._metric = metric
         self._index_name = dataset.replace('-', '_') + str(uuid.uuid1()).replace('-', '_')
-        print("index name: ", self._index_name)
+        print("index name: ", self._index_name, flush=True)
         self._method_param = method_param
         self._ef = None
         self._field = "vec"
@@ -81,7 +81,7 @@ class AliESHNSW(BaseANN):
                 # bulk_records.append(doc_template)
 
         success, failed = self._loop.run_until_complete(
-            async_bulk(self._es, gen_action(), index=self._index_name, raise_on_error=True))
+            async_bulk(self._es, gen_action(), stats_only=True, index=self._index_name, raise_on_error=True))
         if success < count or failed > 0:
             raise Exception("Create index failed. Total {} vectors, {} success, {} fail".format(count, success, failed))
 
@@ -129,7 +129,7 @@ class AliESHNSW(BaseANN):
     def done(self):
         exists = self._loop.run_until_complete(self._es.indices.exists(index=self._index_name))
         if exists:
-            print("delete index...")
+            print("delete index...", flush=True)
             self._loop.run_until_complete(self._es.indices.delete(index=self._index_name))
 
         self._loop.run_until_complete(self._es.close())
