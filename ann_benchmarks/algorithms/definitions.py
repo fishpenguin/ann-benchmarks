@@ -37,13 +37,15 @@ class InstantiationStatus(Enum):
 
 
 def algorithm_status(definition):
+    module= None
     try:
         module = importlib.import_module(definition.module)
         if hasattr(module, definition.constructor):
             return InstantiationStatus.AVAILABLE
         else:
             return InstantiationStatus.NO_CONSTRUCTOR
-    except ImportError:
+    except ImportError as e:
+        print("Cannot import module {}: {}".format(module, e))
         return InstantiationStatus.NO_MODULE
 
 

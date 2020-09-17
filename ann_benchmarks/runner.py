@@ -61,7 +61,6 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
                 total = (time.time() - start)
                 print("query done, time cost: {}".format(total))
             results = algo.get_batch_results()
-            # candidates = [[0] * count] * len(X)
             # global _count_distance_task # ugly but work
             # def _count_distance_task(c, v, single_results):
             #     candidates[c] = [(int(idx), float(metrics[distance]['distance'](v, X_train[idx])))
@@ -78,7 +77,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
 
         def get_candidates(result):
             total, v, ids = result
-            candidates = [(int(idx), float(metrics[distance]['distance'](v, X_train[idx])))  # noqa
+            candidates = [(int(idx), float("-inf"))  # noqa
                           for idx in ids]
             n_items_processed[0] += 1
             if n_items_processed[0] % 1000 == 0:
