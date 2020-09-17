@@ -204,6 +204,8 @@ function""" % (definition.module, definition.constructor, definition.arguments)
             descriptor["dataset"] = dataset
             store_results(dataset, count, definition,
                           query_arguments, descriptor, results, batch)
+    except Exception as e:
+        print("Occur an error: during run {}".format(str(e)))
     finally:
         algo.done()
 
