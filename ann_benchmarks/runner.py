@@ -206,6 +206,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
                           query_arguments, descriptor, results, batch)
     except Exception as e:
         print("Occur an error: during run {}".format(str(e)), flush=True)
+        raise e
     finally:
         algo.done()
 
