@@ -166,12 +166,14 @@ class MilvusIVFFLAT(BaseANN):
     def __str__(self):
         return 'MilvusIVFFLAT(index={}, index_param={}, search_param={})'.format(self._index_type, self._index_param, self._search_param)
 
-    # def done(self):
-    #     self._milvus.drop_collection(self._table_name)
+    def done(self):
+        self._milvus.drop_collection(self._table_name)
+
 
 class MilvusIVFSQ8(MilvusIVFFLAT):
     def __str__(self):
         return 'MilvusIVFSQ8(index={}, index_param={}, search_param={})'.format(self._index_type, self._index_param, self._search_param)
+
 
 class MilvusIVFSQ8H(MilvusIVFFLAT):
     def __str__(self):
