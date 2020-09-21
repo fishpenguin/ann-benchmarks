@@ -16,7 +16,8 @@ class MilvusIVFFLAT(BaseANN):
         # import uuid
         # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._table_name = dataset.replace('-', '_')
-        postfix = '_' + str(metric) + '_' + str(index_type) + '_' + str(nlist)
+        self._index_file_size = 2048
+        postfix = '_' + str(metric) + '_' + str(index_type) + '_' + str(nlist) + '_' + str(self._index_file_size)
         self._table_name += postfix
         self._table_name.replace('-', '_')
         self._index_type = index_type
@@ -63,7 +64,7 @@ class MilvusIVFFLAT(BaseANN):
             print("create table...")
             self._milvus.create_collection({
                 'collection_name': self._table_name, 'dimension': X.shape[1],
-                'index_file_size': 2048, 'metric_type': self._metric}
+                'index_file_size': self._index_file_size, 'metric_type': self._metric}
             )
 
         vector_ids = [id for id in range(self._already_nums, self._already_nums + len(X))]
@@ -94,7 +95,7 @@ class MilvusIVFFLAT(BaseANN):
             self._milvus.drop_collection(self._table_name)
         self._milvus.create_collection({
             'collection_name': self._table_name, 'dimension': X.shape[1],
-            'index_file_size': 2048, 'metric_type': self._metric}
+            'index_file_size': self._index_file_size, 'metric_type': self._metric}
         )
 
         vector_ids = [id for id in range(len(X))]

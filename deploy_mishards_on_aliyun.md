@@ -33,11 +33,21 @@ mysql -h localhost -uroot -p
 详见 https://nasnext.console.aliyun.com/cn-hangzhou/filesystem/0ba934af88/mount
 
 ```shell
-apt-get update && apt-get install nfs-common
+apt-get update && apt-get install -y nfs-common
 echo "options sunrpc tcp_slot_table_entries=128" >>  /etc/modprobe.d/sunrpc.conf 
 echo "options sunrpc tcp_max_slot_table_entries=128" >>  /etc/modprobe.d/sunrpc.conf
 mount -t nfs -o vers=4,minorversion=0,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 0ba934af88-tkj3.cn-hangzhou.nas.aliyuncs.com:/ /mnt
 df -h | grep aliyun
+```
+
+## 挂载 OSS
+
+```shell
+dpkg -i ossfs_1.80.6_ubuntu18.04_amd64.deb
+mkdir oss-mishards
+echo mishards:LTAI4GCbcvemr2bDgKqWjjva:cuhCNRZh2l2gzA23k9wZ3jzNBYIsQS > /etc/passwd-ossfs
+chmod 640 /etc/passwd-ossfs
+ossfs mishards oss-mishards -ourl=http://oss-cn-hangzhou-internal.aliyuncs.com -oallow_other
 ```
 
 ## 节点
@@ -85,10 +95,10 @@ SERVER_PORT=19535
 SERVER_TEST_PORT=19888
 MAX_WORKERS=50
 
-SQLALCHEMY_DATABASE_URI=mysql+pymysql://root:root@127.0.0.1:3306/milvus?charset=utf8mb4
+SQLALCHEMY_DATABASE_URI=mysql+pymysql://root:123456@127.0.0.1:3306/milvus?charset=utf8mb4
 SQL_ECHO=False
 
-SQLALCHEMY_DATABASE_TEST_URI=mysql+pymysql://root:root@127.0.0.1:3306/milvus?charset=utf8mb4
+SQLALCHEMY_DATABASE_TEST_URI=mysql+pymysql://root:123456@127.0.0.1:3306/milvus?charset=utf8mb4
 SQL_TEST_ECHO=False
 
 DISCOVERY_STATIC_HOSTS=127.0.0.1

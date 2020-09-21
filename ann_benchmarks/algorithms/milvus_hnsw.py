@@ -18,7 +18,8 @@ class MilvusHNSW(MilvusIVFFLAT):
         # import uuid
         # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._table_name = dataset.replace('-', '_')
-        postfix = '_hnsw_' + str(metric)
+        self._index_file_size = 2048
+        postfix = '_hnsw_' + str(metric) + '_' + str(self._index_file_size)
         for key, value in method_param.items():
             postfix += '_' + str(key) + '_' + str(value)
         self._table_name += postfix
@@ -41,7 +42,7 @@ class MilvusHNSW(MilvusIVFFLAT):
             print('create table...')
             self._milvus.create_collection(
                 {'collection_name': self._table_name, 'dimension': X.shape[1],
-                 'index_file_size': 2048, 'metric_type': self._metric}
+                 'index_file_size': self._index_file_size, 'metric_type': self._metric}
             )
 
         vector_ids = [id_ for id_ in range(self._already_nums, self._already_nums + len(X))]
@@ -74,7 +75,7 @@ class MilvusHNSW(MilvusIVFFLAT):
             self._milvus.drop_collection(self._table_name)
         self._milvus.create_collection(
             {'collection_name': self._table_name, 'dimension': X.shape[1],
-             'index_file_size': 2048, 'metric_type': self._metric}
+             'index_file_size': self._index_file_size, 'metric_type': self._metric}
         )
         vector_ids = [id_ for id_ in range(len(X))]
         records = X.tolist()

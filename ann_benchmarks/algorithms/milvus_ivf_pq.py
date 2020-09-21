@@ -15,7 +15,8 @@ class MilvusIVFPQ(MilvusIVFFLAT):
         # import uuid
         # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._table_name = dataset.replace('-', '_')
-        postfix = '_' + str(metric) + '_' + str(index_type) + '_' + str(nlist) + '_' + str(m)
+        self._index_file_size = 2048
+        postfix = '_' + str(metric) + '_' + str(index_type) + '_' + str(nlist) + '_' + str(m) + '_' + str(self._index_file_size)
         self._table_name += postfix
         self._table_name.replace('-', '_')
         self._index_type = index_type
