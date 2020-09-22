@@ -48,9 +48,9 @@ class AnalyticDB(BaseANN):
         sql = "select pg_database_size('%s')" % (self._database)
         print(sql)
         self._cursor.execute(sql)
-        database_size_of_disk = self._cursor.fetch()
-        print(database_size_of_disk[0])
-        return database_size_of_disk[0] / 1024
+        database_size_of_disk = self._cursor.fetchall()
+        print(database_size_of_disk[0][0])
+        return database_size_of_disk[0][0] / 1024
 
     def get_memory_usage(self):
         return self._get_database_size_of_disk()
@@ -148,7 +148,8 @@ class AnalyticDB(BaseANN):
         return 'AnalyticDB for PostgreSQL, machine: %s' % (self._host)
 
     def done(self):
-        # self._drop_table()
+        if self._table_exist():
+            self._drop_table()
         self._conn.close()
 
 class AnalyticDBAsync(AnalyticDB):
@@ -183,6 +184,8 @@ class AnalyticDBAsync(AnalyticDB):
         self._db_pool = self._el.run_until_complete(asyncpg.create_pool(
             **db_setting
         ))
+        async with self._db_pool.acquire() as conn:
+            await conn.execute('create extension pase')
 
     async def batch_insert(self, records):
         async with self._db_pool.acquire() as conn:

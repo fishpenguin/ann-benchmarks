@@ -36,7 +36,8 @@ mysql -h localhost -uroot -p
 apt-get update && apt-get install -y nfs-common
 echo "options sunrpc tcp_slot_table_entries=128" >>  /etc/modprobe.d/sunrpc.conf 
 echo "options sunrpc tcp_max_slot_table_entries=128" >>  /etc/modprobe.d/sunrpc.conf
-mount -t nfs -o vers=4,minorversion=0,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 0ba934af88-tkj3.cn-hangzhou.nas.aliyuncs.com:/ /mnt
+mkdir -p /mnt/nas
+mount -t nfs -o vers=4,minorversion=0,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 0ba934af88-tkj3.cn-hangzhou.nas.aliyuncs.com:/ /mnt/nas
 df -h | grep aliyun
 ```
 
@@ -61,6 +62,8 @@ wget https://raw.githubusercontent.com/milvus-io/milvus/0.10.2/core/conf/demo/se
 # 将 meta_uri 改为 mysql://root:123456@<MySQL_server_host IP>:3306/milvus
 # 读节点，role -> ro
 # 写节点，role -> rw
+# cache size 450
+# wal false
 docker run -d --name milvus_cpu_0.10.2 \
 -p 19530:19530 \
 -p 19121:19121 \

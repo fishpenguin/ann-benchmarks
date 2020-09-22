@@ -33,6 +33,8 @@ class PaseHNSWAsync(AnalyticDBAsync):
         self._ef_build = ef_build
         postfix = '_' + str(base_nb_num) + '_' + str(ef_build) + '_hnsw'
         self._table_name += postfix
+        self._conn.execute('create extension if not exists pase')
+        self._conn.commit()
 
     def _create_table(self):
         create_sql = "create table {} (id int, vector float4[])".format(self._table_name)
@@ -111,6 +113,8 @@ class PaseIVFFLATAsync(AnalyticDBAsync):
         self._distance_type = distance_type
         postfix = '_' + str(clustering_sample_ratio) + '_' + str(k) + '_' + str(clustering_type) + '_' + str(distance_type) + '_ivfflat'
         self._table_name += postfix
+        self._conn.execute('create extension if not exists pase')
+        self._conn.commit()
 
     def _create_table(self):
         create_sql = "create table {} (id int, vector float4[])".format(self._table_name)
@@ -129,7 +133,7 @@ with (clustering_type = {}, distance_type = {}, dimension = {}, base64_encoded =
         self._conn.commit()
 
     def set_query_arguments(self, nprobe):
-        self._nprobe = nprobe
+        self._nprobe = min(nprobe, self._k)
 
     def batch_query(self, X, n):
         rows = list(range(len(X)))
@@ -141,7 +145,7 @@ with (clustering_type = {}, distance_type = {}, dimension = {}, base64_encoded =
                         query_data += str(c) + ','
                     metric_type = '0' # euclidean distance
                     query_data = query_data[:-1] + ':' + str(self._nprobe) + ':' + metric_type
-                    sql = "select id from {} order by vector <#> '{}' limit {}".format(self._table_name, query_data, n)
+                    sql = "select id from {} order by vector <#> '{}'::pase limit {}".format(self._table_name, query_data, n)
                     rows[i] = await conn.fetch(sql)
 
             coros = [single_query(i) for i in range(len(X))]
