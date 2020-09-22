@@ -74,6 +74,7 @@ class AliESHNSW(BaseANN):
         return count == total_num
 
     def fit(self, X):
+        print("Fit data... already data is {}".format(self._fit_count), flush=True)
         count = X.shape[0]
 
         async def gen_action():
@@ -99,9 +100,6 @@ class AliESHNSW(BaseANN):
         self.fit(X)
         self._fit_count += X.shape[0]
         if self._fit_count == total_num:
-            stats = self._loop.run_until_complete(self._es.indices.stats(index=self._index_name))
-            count = stats["_all"]["primaries"]["docs"]["count"]
-
             print("| ES | refresh", flush=True)
             self._loop.run_until_complete(self._es.indices.refresh(index=self._index_name, params={"request_timeout": 1800}))
             time.sleep(10)
@@ -111,6 +109,15 @@ class AliESHNSW(BaseANN):
             print("| ES | forcemerge", flush=True)
             self._loop.run_until_complete(self._es.indices.forcemerge(index=self._index_name, params={"request_timeout": 1800}))
             time.sleep(10)
+
+            stats = self._loop.run_until_complete(self._es.indices.stats(index=self._index_name))
+            count = stats["_all"]["primaries"]["docs"]["count"]
+            if count != total_num:
+                deleted = stats["_all"]["primaries"]["docs"]["deleted"]
+                print("Error: fit data failed. count is {}, but total is {}. {} is deleted ".format(count, total_num,
+                                                                                                    deleted),
+                      flush=True)
+                raise RuntimeError("Fit data failed. stored data count is not equal to total")
 
     def set_query_arguments(self, ef):
         self._ef = ef
@@ -149,7 +156,7 @@ class AliESHNSW(BaseANN):
         if exists:
             print("delete index...", flush=True)
             self._loop.run_until_complete(self._es.indices.delete(index=self._index_name))
-            time.sleep(10)
+            time.sleep(60)
 
         self._loop.run_until_complete(self._es.close())
         # self._loop.close()
