@@ -35,6 +35,10 @@ class PaseHNSWAsync(AnalyticDBAsync):
         self._table_name += postfix
         self._conn.execute('create extension if not exists pase')
         self._conn.commit()
+        async def _create_extension():
+            async with self._db_pool.acquire() as conn:
+                await conn.execute('create extension if not exists pase')
+        self._el.run_until_complete(_create_extension())
 
     def _create_table(self):
         create_sql = "create table {} (id int, vector float4[])".format(self._table_name)
@@ -115,6 +119,10 @@ class PaseIVFFLATAsync(AnalyticDBAsync):
         self._table_name += postfix
         self._conn.execute('create extension if not exists pase')
         self._conn.commit()
+        async def _create_extension():
+            async with self._db_pool.acquire() as conn:
+                await conn.execute('create extension if not exists pase')
+        self._el.run_until_complete(_create_extension())
 
     def _create_table(self):
         create_sql = "create table {} (id int, vector float4[])".format(self._table_name)

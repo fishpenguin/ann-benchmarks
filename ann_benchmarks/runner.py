@@ -30,7 +30,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
 
     best_search_time = float('inf')
     for i in range(run_count):
-        print('Run %d/%d...' % (i + 1, run_count))
+        print('Run %d/%d...' % (i + 1, run_count), flush=True)
         # a bit dumb but can't be a scalar since of Python's scoping rules
         n_items_processed = [0]
 
@@ -56,10 +56,10 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
                 total = (time.time() - start)
             else:
                 start = time.time()
-                print("query start, start time: {}".format(start))
+                print("[{}] query start, start time: {}".format(datetime.datetime.now(), start), flush=True)
                 algo.batch_query(X, count)
                 total = (time.time() - start)
-                print("query done, time cost: {}".format(total))
+                print("[{}] query done, time cost: {}".format(datetime.datetime.now(), total), flush=True)
             results = algo.get_batch_results()
             # global _count_distance_task # ugly but work
             # def _count_distance_task(c, v, single_results):
@@ -82,10 +82,10 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
             n_items_processed[0] += 1
             if n_items_processed[0] % 1000 == 0:
                 print('Processed %d/%d queries...' %
-                      (n_items_processed[0], len(X_test)))
+                      (n_items_processed[0], len(X_test), flush=True))
             if len(candidates) > count:
                 print('warning: algorithm %s returned %d results, but count'
-                      ' is only %d)' % (algo, len(candidates), count))
+                      ' is only %d)' % (algo, len(candidates), count), flush=True)
             return (total, candidates)
 
         if batch:
@@ -111,7 +111,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         total_time = sum(time for time, _ in results) + handle_time
         total_candidates = sum(len(candidates) for _, candidates in results)
         search_time = total_time / len(X_test)
-        print("search_time: ", search_time)
+        print("search_time: ", search_time, flush=True)
         avg_candidates = total_candidates / len(X_test)
         best_search_time = min(best_search_time, search_time)
 
@@ -143,7 +143,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
     D = get_dataset(dataset)
     X_test = numpy.array(D['test'])
     distance = D.attrs['distance']
-    print('got %d queries' % len(X_test))
+    print('got %d queries' % len(X_test), flush=True)
 
     X_test = dataset_transform[distance](X_test)
 
@@ -157,10 +157,10 @@ function""" % (definition.module, definition.constructor, definition.arguments)
         train_size = len(D['train'])
         if not algo.already_fit(train_size):
             if algo.support_batch_fit():
-                print('got a train set of size (%d * %d)' % (train_size, len(D['train'][0])))
+                print('got a train set of size (%d * %d)' % (train_size, len(D['train'][0])), flush=True)
                 num_per_batch = 1000000
                 for i in range(0, train_size, num_per_batch):
-                    print('begin fit {}th vector ...'.format(i))
+                    print('[{}] begin fit {}th vector ...'.format(datetime.datetime.now(), i), flush=True)
                     end = min(i + num_per_batch, train_size)
                     X_train = numpy.array(D['train'][i:end])
                     X_train = dataset_transform[distance](X_train)
