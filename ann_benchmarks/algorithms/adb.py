@@ -184,8 +184,10 @@ class AnalyticDBAsync(AnalyticDB):
         self._db_pool = self._el.run_until_complete(asyncpg.create_pool(
             **db_setting
         ))
-        async with self._db_pool.acquire() as conn:
-            await conn.execute('create extension pase')
+        async def _create_extension():
+            async with self._db_pool.acquire() as conn:
+                await conn.execute('create extension if not exists pase')
+        self._el.run_until_complete(_create_extension())
 
     async def batch_insert(self, records):
         async with self._db_pool.acquire() as conn:
