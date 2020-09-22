@@ -16,8 +16,8 @@ class AliESHNSW(BaseANN):
         self._ef = None
         self._field = "vec"
         # self._es = Elasticsearch([ip], port=port)
-        self._es = AsyncElasticsearch("es-cn-m7r1u2l27000n7e7h.public.elasticsearch.aliyuncs.com:9200",
-                                      http_auth=("******", "********"), max_retries=5, retry_on_timeout=True, timeout=30)
+        self._es = AsyncElasticsearch("http://es-cn-6ja1u3cgp000nod93.elasticsearch.aliyuncs.com:9200",
+                                      http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeout=True, timeout=600)
         self._loop = asyncio.get_event_loop()
         self._fit_count = 0
 
@@ -99,7 +99,18 @@ class AliESHNSW(BaseANN):
         self.fit(X)
         self._fit_count += X.shape[0]
         if self._fit_count == total_num:
-            self._loop.run_until_complete(self._es.indices.refresh(index=self._index_name))
+            stats = self._loop.run_until_complete(self._es.indices.stats(index=self._index_name))
+            count = stats["_all"]["primaries"]["docs"]["count"]
+
+            print("| ES | refresh", flush=True)
+            self._loop.run_until_complete(self._es.indices.refresh(index=self._index_name, params={"request_timeout": 1800}))
+            time.sleep(10)
+            print("| ES | flush", flush=True)
+            self._loop.run_until_complete(self._es.indices.flush(index=self._index_name, params={"request_timeout": 1800}))
+            time.sleep(10)
+            print("| ES | forcemerge", flush=True)
+            self._loop.run_until_complete(self._es.indices.forcemerge(index=self._index_name, params={"request_timeout": 1800}))
+            time.sleep(10)
 
     def set_query_arguments(self, ef):
         self._ef = ef
@@ -138,8 +149,10 @@ class AliESHNSW(BaseANN):
         if exists:
             print("delete index...", flush=True)
             self._loop.run_until_complete(self._es.indices.delete(index=self._index_name))
+            time.sleep(10)
 
         self._loop.run_until_complete(self._es.close())
+        # self._loop.close()
 
     def __str__(self):
         return "Elasticsearch({}, param: {}, search param: {})".format("euclidean", self._method_param, self._ef)

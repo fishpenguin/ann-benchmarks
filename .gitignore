@@ -8,6 +8,9 @@ install/*.yaml
 install/lib-*/
 data/*
 data
+records*/
+start*.sh
+*.out
 *.class
 
 # IDE

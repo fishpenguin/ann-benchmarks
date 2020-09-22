@@ -148,7 +148,7 @@ class AnalyticDB(BaseANN):
         return 'AnalyticDB for PostgreSQL, machine: %s' % (self._host)
 
     def done(self):
-        # self._drop_table()
+        self._drop_table()
         self._conn.close()
 
 class AnalyticDBAsync(AnalyticDB):

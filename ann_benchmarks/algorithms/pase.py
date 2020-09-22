@@ -12,11 +12,11 @@ class PaseHNSWAsync(AnalyticDBAsync):
         dataset,
         base_nb_num,
         ef_build,
-        host='pgm-bp174758o17b9a8ylo.pg.rds.aliyuncs.com',
+        host='pgm-bp1hozo0rieg1059118030.pg.rds.aliyuncs.com',
         useless='useless',
         database='postgres',
-        user='annbench',
-        password='Fantast1c',
+        user='milvus',
+        password='Zilliz1314',
         port=1921,
     ):
         AnalyticDBAsync.__init__(
