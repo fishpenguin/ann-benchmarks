@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import asyncio
 import uuid
+import sys
 import time
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
@@ -15,7 +16,6 @@ class AliESHNSW(BaseANN):
         self._method_param = method_param
         self._ef = None
         self._field = "vec"
-        # self._es = Elasticsearch([ip], port=port)
         self._es = AsyncElasticsearch("http://es-cn-6ja1u3cgp000nod93.elasticsearch.aliyuncs.com:9200",
                                       http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeout=True, timeout=600)
         self._loop = asyncio.get_event_loop()
@@ -28,6 +28,17 @@ class AliESHNSW(BaseANN):
 
         stats = self._loop.run_until_complete(self._es.indices.stats(index=self._index_name))
         return int(stats["_all"]["primaries"]["store"]["size_in_bytes"]) / 1024
+
+    def wait_task_empty(self, waiter):
+        while True:
+            health = self._loop.run_until_complete(self._es.cluster.health())
+            pending_tasks = int(health["number_of_pending_tasks"])
+            if pending_tasks > 0:
+                print("Pending task is {}, <{}> waiting for 10s ....".format(pending_tasks, waiter), flush=True)
+                time.sleep(10)
+                continue
+
+            break
 
     def on_start(self, *args, **kwargs):
         dim = kwargs.get("dim", None)
@@ -57,8 +68,9 @@ class AliESHNSW(BaseANN):
 
         exist = self._loop.run_until_complete(self._es.indices.exists(index=self._index_name))
         if exist:
+            print("Found index {}. delete it".format(self._index_name), flush=True)
             self._loop.run_until_complete(self._es.indices.delete(index=self._index_name))
-        # create index mappings
+            time.sleep(10)
         self._loop.run_until_complete(self._es.indices.create(index=self._index_name, body=_index_body))
 
     def support_batch_fit(self):
@@ -102,13 +114,13 @@ class AliESHNSW(BaseANN):
         if self._fit_count == total_num:
             print("| ES | refresh", flush=True)
             self._loop.run_until_complete(self._es.indices.refresh(index=self._index_name, params={"request_timeout": 1800}))
-            time.sleep(10)
+            self.wait_task_empty("fit.refresh")
             print("| ES | flush", flush=True)
             self._loop.run_until_complete(self._es.indices.flush(index=self._index_name, params={"request_timeout": 1800}))
-            time.sleep(10)
+            self.wait_task_empty("fit.flush")
             print("| ES | forcemerge", flush=True)
             self._loop.run_until_complete(self._es.indices.forcemerge(index=self._index_name, params={"request_timeout": 1800}))
-            time.sleep(10)
+            self.wait_task_empty("fit.forcemerge")
 
             stats = self._loop.run_until_complete(self._es.indices.stats(index=self._index_name))
             count = stats["_all"]["primaries"]["docs"]["count"]
@@ -116,7 +128,7 @@ class AliESHNSW(BaseANN):
                 deleted = stats["_all"]["primaries"]["docs"]["deleted"]
                 print("Error: fit data failed. count is {}, but total is {}. {} is deleted ".format(count, total_num,
                                                                                                     deleted),
-                      flush=True)
+                      file=sys.stderr, flush=True)
                 raise RuntimeError("Fit data failed. stored data count is not equal to total")
 
     def set_query_arguments(self, ef):
@@ -154,12 +166,12 @@ class AliESHNSW(BaseANN):
     def done(self):
         exists = self._loop.run_until_complete(self._es.indices.exists(index=self._index_name))
         if exists:
-            print("delete index...", flush=True)
+            time.sleep(10)
+            print("Deleting index {} ...".format(self._index_name), flush=True)
             self._loop.run_until_complete(self._es.indices.delete(index=self._index_name))
-            time.sleep(60)
+            self.wait_task_empty("done.done")
 
         self._loop.run_until_complete(self._es.close())
-        # self._loop.close()
 
     def __str__(self):
         return "Elasticsearch({}, param: {}, search param: {})".format("euclidean", self._method_param, self._ef)
