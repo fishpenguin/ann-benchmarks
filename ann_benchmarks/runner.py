@@ -82,7 +82,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
             n_items_processed[0] += 1
             if n_items_processed[0] % 1000 == 0:
                 print('Processed %d/%d queries...' %
-                      (n_items_processed[0], len(X_test), flush=True))
+                      (n_items_processed[0], len(X_test)), flush=True)
             if len(candidates) > count:
                 print('warning: algorithm %s returned %d results, but count'
                       ' is only %d)' % (algo, len(candidates), count), flush=True)

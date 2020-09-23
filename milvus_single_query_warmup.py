@@ -3,6 +3,8 @@
 import milvus
 import numpy
 import h5py
+import datetime
+import time
 from ann_benchmarks.algorithms.milvus_ivf_flat import MilvusIVFFLAT
 from ann_benchmarks.algorithms.milvus_hnsw import MilvusHNSW
 
@@ -36,5 +38,9 @@ def hnsw_warmup(metric='euclidean',
     print("len(result): ", len(result))
 
 if __name__ == "__main__":
+    print('[{}] ivfflat begin warmup'.format(datetime.datetime.now()))
+    begin = time.time()
     ivfflat_warmup()
+    print('[{}] ivfflat warmup done'.format(datetime.datetime.now()))
+    print("ivfflat warmup cost: ", time.time() - begin)
 
