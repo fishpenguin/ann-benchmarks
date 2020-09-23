@@ -41,16 +41,6 @@ mount -t nfs -o vers=4,minorversion=0,rsize=1048576,wsize=1048576,hard,timeo=600
 df -h | grep aliyun
 ```
 
-## 挂载 OSS
-
-```shell
-dpkg -i ossfs_1.80.6_ubuntu18.04_amd64.deb
-mkdir oss-mishards
-echo mishards:LTAI4GCbcvemr2bDgKqWjjva:cuhCNRZh2l2gzA23k9wZ3jzNBYIsQS > /etc/passwd-ossfs
-chmod 640 /etc/passwd-ossfs
-ossfs mishards oss-mishards -ourl=http://oss-cn-hangzhou-internal.aliyuncs.com -oallow_other
-```
-
 ## 节点
 
 ```shell
