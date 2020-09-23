@@ -103,6 +103,7 @@ class AliESHNSW(BaseANN):
             async_bulk(self._es, gen_action(), stats_only=True, index=self._index_name, raise_on_error=True))
         if success < count or failed > 0:
             raise Exception("Create index failed. Total {} vectors, {} success, {} fail".format(count, success, failed))
+        time.sleep(5)
 
     def batch_fit(self, X, total_num):
         if self._fit_count == 0:
