@@ -6,12 +6,7 @@ float:
       constructor: PaseHNSWAsync
       base-args: ["@dataset"]
       run-groups:
-        # base_nb_nums: 5 ~ 64
-        # ef_build: 10 ~ 320
-        # ef_search: 10 ~ 400
-        build-80:
-          args: [[16], [80]]
-          query-args: [[10, 20, 30, 40, 50, 60, 70]]
-        build-200:
-          args: [[16], [200]]
-          query-args: [[10, 20, 30, 40, 50, 70, 100, 150, 200]]
+        efconstruction-500:
+          args: [[4, 8, 12, 16, 24, 36, 48, 64], [500]]
+          query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+
