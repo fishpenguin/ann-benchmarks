@@ -16,7 +16,7 @@ class AliESHNSW(BaseANN):
         self._method_param = method_param
         self._ef = None
         self._field = "vec"
-        self._es = AsyncElasticsearch("http://es-cn-6ja1u3cgp000nod93.elasticsearch.aliyuncs.com:9200",
+        self._es = AsyncElasticsearch("http://es-cn-nif1ubs4z000anbgz.public.elasticsearch.aliyuncs.com:9200",
                                       http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeout=True, timeout=600)
         self._loop = asyncio.get_event_loop()
         self._fit_count = 0
