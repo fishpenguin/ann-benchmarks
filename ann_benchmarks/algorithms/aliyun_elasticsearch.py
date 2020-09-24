@@ -35,7 +35,7 @@ class AliESHNSW(BaseANN):
             pending_tasks = int(health["number_of_pending_tasks"])
             if pending_tasks > 0:
                 print("Pending task is {}, <{}> waiting for 10s ....".format(pending_tasks, waiter), flush=True)
-                time.sleep(10)
+                time.sleep(2)
                 continue
 
             break
@@ -103,7 +103,7 @@ class AliESHNSW(BaseANN):
             async_bulk(self._es, gen_action(), stats_only=True, index=self._index_name, raise_on_error=True))
         if success < count or failed > 0:
             raise Exception("Create index failed. Total {} vectors, {} success, {} fail".format(count, success, failed))
-        time.sleep(5)
+        self.wait_task_empty("fit.{}".format(self._fit_count))
 
     def batch_fit(self, X, total_num):
         if self._fit_count == 0:
@@ -146,7 +146,9 @@ class AliESHNSW(BaseANN):
                     }
                 }
             },
-            "_source": False
+            "_source": False,
+            "from": 0,
+            "size": n
         }
 
         return self._es.search(index=self._index_name, body=query_params)
