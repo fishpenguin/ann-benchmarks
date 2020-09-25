@@ -22,7 +22,7 @@ start*.sh
 results*/
 html*/
 *.txt
-*.log
+*.log*
 *.tar
 *.ipynb
 
@@ -36,3 +36,4 @@ website*
 
 # resutls
 2020*
+experiment*/
