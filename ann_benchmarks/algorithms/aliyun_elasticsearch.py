@@ -16,7 +16,7 @@ class AliESHNSW(BaseANN):
         self._method_param = method_param
         self._ef = None
         self._field = "vec"
-        self._es = AsyncElasticsearch("http://es-cn-nif1ubs4z000anbgz.public.elasticsearch.aliyuncs.com:9200",
+        self._es = AsyncElasticsearch("http://es-cn-oew1ucddr000gp1ys.public.elasticsearch.aliyuncs.com:9200",
                                       http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeout=True, timeout=600)
         self._loop = asyncio.get_event_loop()
         self._fit_count = 0
@@ -62,7 +62,8 @@ class AliESHNSW(BaseANN):
                 "index.vector.hnsw.builder.efconstruction": self._method_param["efConstruction"],
                 "index.refresh_interval": "1s",
                 "index.number_of_replicas": 1,
-                "index.number_of_shards": 1
+                "index.number_of_shards": 1,
+                # "index.write.wait_for_active_shards": "2"
             }
         }
 
@@ -71,7 +72,7 @@ class AliESHNSW(BaseANN):
             print("Found index {}. delete it".format(self._index_name), flush=True)
             self._loop.run_until_complete(self._es.indices.delete(index=self._index_name))
             time.sleep(10)
-        self._loop.run_until_complete(self._es.indices.create(index=self._index_name, body=_index_body))
+        created = self._loop.run_until_complete(self._es.indices.create(index=self._index_name, body=_index_body))
 
     def support_batch_fit(self):
         return True
@@ -89,29 +90,35 @@ class AliESHNSW(BaseANN):
         print("Fit data... already data is {}".format(self._fit_count), flush=True)
         count = X.shape[0]
 
-        async def gen_action():
-            for i, vec in enumerate(X.tolist()):
-                yield {
-                    "_index": self._index_name,
-                    "_id": i + self._fit_count,
-                    "_source": {
-                        self._field: vec,
-                    }
-                }
+        for offset in range(0, count, 1000):
+            batch_end = min(offset + 1000, count)
+            Xp = X[offset: batch_end]
+            batch_count = batch_end - offset
 
-        success, failed = self._loop.run_until_complete(
-            async_bulk(self._es, gen_action(), stats_only=True, index=self._index_name, raise_on_error=True))
-        if success < count or failed > 0:
-            raise Exception("Create index failed. Total {} vectors, {} success, {} fail".format(count, success, failed))
-        self.wait_task_empty("fit.{}".format(self._fit_count))
+            async def gen_action():
+                for i, vec in enumerate(Xp.tolist()):
+                    yield {
+                        "_index": self._index_name,
+                        "_id": i + self._fit_count,
+                        "_source": {
+                            self._field: vec,
+                        }
+                    }
+
+            success, failed = self._loop.run_until_complete(
+                async_bulk(self._es, gen_action(), stats_only=True, index=self._index_name, raise_on_error=True))
+            if success < batch_count or failed > 0:
+                raise Exception("Create index failed. Total {} vectors, {} success, {} fail".format(batch_count, success, failed))
+            self.wait_task_empty("fit.{}".format(self._fit_count))
+            self._fit_count += batch_count
 
     def batch_fit(self, X, total_num):
         if self._fit_count == 0:
+            print("Start create index ...")
             dim = X.shape[1]
             self.on_start(dim=dim)
 
         self.fit(X)
-        self._fit_count += X.shape[0]
         if self._fit_count == total_num:
             print("| ES | refresh", flush=True)
             self._loop.run_until_complete(self._es.indices.refresh(index=self._index_name, params={"request_timeout": 1800}))
@@ -139,7 +146,7 @@ class AliESHNSW(BaseANN):
         query_params = {
             "query": {
                 "hnsw": {
-                    "vec": {
+                    self._field: {
                         "vector": v,
                         "size": n,
                         "ef": self._ef
@@ -175,6 +182,7 @@ class AliESHNSW(BaseANN):
             self.wait_task_empty("done.done")
 
         self._loop.run_until_complete(self._es.close())
+        self._fit_count = 0
 
     def __str__(self):
         return "Elasticsearch({}, param: {}, search param: {})".format("euclidean", self._method_param, self._ef)

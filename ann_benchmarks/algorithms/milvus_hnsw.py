@@ -160,7 +160,7 @@ class MilvusHNSW(MilvusIVFFLAT):
         return batch_results
 
     def __str__(self):
-        return 'Milvus(index={}, index_param={}, search_param={})'.format("HNSW", self._method_param, self._ef)
+        return 'MilvusHNSW(index={}, index_param={}, search_param={})'.format("HNSW", self._method_param, self._ef)
 
     def done(self):
         self._milvus.drop_collection(self._table_name)
