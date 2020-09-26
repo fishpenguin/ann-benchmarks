@@ -14,7 +14,7 @@ class MilvusHNSW(MilvusIVFFLAT):
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
         self._method_param = method_param
         self._ef = None
-        self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
+        self._milvus = milvus.Milvus(host='172.16.0.53', port='19530', try_connect=False, pre_ping=False)
         # import uuid
         # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._table_name = dataset.replace('-', '_')
@@ -161,7 +161,7 @@ class MilvusHNSW(MilvusIVFFLAT):
         return batch_results
 
     def __str__(self):
-        return 'Milvus(index={}, index_param={}, search_param={})'.format("HNSW", self._method_param, self._ef)
+        return 'MilvusHNSW(index={}, index_param={}, search_param={})'.format("HNSW", self._method_param, self._ef)
 
     # def done(self):
     #     self._milvus.drop_collection(self._table_name)

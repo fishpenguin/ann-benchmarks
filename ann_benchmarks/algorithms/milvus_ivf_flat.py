@@ -12,7 +12,7 @@ class MilvusIVFFLAT(BaseANN):
         self._index_param = {'nlist': nlist}
         self._search_param = {'nprobe': None}
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
-        self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
+        self._milvus = milvus.Milvus(host='172.16.0.53', port='19530', try_connect=False, pre_ping=False)
         # import uuid
         # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._table_name = dataset.replace('-', '_')
@@ -29,9 +29,17 @@ class MilvusIVFFLAT(BaseANN):
         self._res = None
 
     def get_memory_usage(self):
-        _, reply = self._milvus._cmd("get_system_info")
-        info = json.loads(reply)
-        return int(info["memory_used"]) / 1024
+        _, exist = self._milvus.has_collection(self._table_name)
+        if not exist:
+            return 0.0
+
+        _, stats = self._milvus.get_collection_stats(self._table_name)
+        size = 0
+        for p in stats["partitions"]:
+            for s in p["segments"]:
+                size += int(s["data_size"])
+
+        return size / 1024
 
     def support_batch_fit(self):
         return True
