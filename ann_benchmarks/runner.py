@@ -30,7 +30,7 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
 
     best_search_time = float('inf')
     for i in range(run_count):
-        print('Run %d/%d...' % (i + 1, run_count), flush=True)
+        print('[{}] Run {}/{}...'.format(datetime.datetime.now(), i + 1, run_count), flush=True)
         # a bit dumb but can't be a scalar since of Python's scoping rules
         n_items_processed = [0]
 
