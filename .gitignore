@@ -22,6 +22,8 @@ html*/
 *.log
 *.tar
 *.ipynb
+*.sh
+*.out
 
 # data
 data*/

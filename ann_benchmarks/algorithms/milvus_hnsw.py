@@ -164,4 +164,5 @@ class MilvusHNSW(MilvusIVFFLAT):
         return 'MilvusHNSW(index={}, index_param={}, search_param={})'.format("HNSW", self._method_param, self._ef)
 
     def done(self):
+        print("Delete table ", self._table_name, "......")
         self._milvus.drop_collection(self._table_name)

@@ -176,6 +176,7 @@ class MilvusIVFFLAT(BaseANN):
         return 'MilvusIVFFLAT(index={}, index_param={}, search_param={})'.format(self._index_type, self._index_param, self._search_param)
 
     def done(self):
+        print("Delete table ", self._table_name, "......")
         self._milvus.drop_collection(self._table_name)
 
 
