@@ -206,6 +206,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
                           query_arguments, descriptor, results, batch)
     except Exception as e:
         print("Error occurred when running: ", str(e), file=sys.stderr, flush=True)
+        raise e
     finally:
         algo.done()
 
