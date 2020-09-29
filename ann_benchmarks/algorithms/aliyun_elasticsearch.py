@@ -9,14 +9,14 @@ from ann_benchmarks.algorithms.base import BaseANN
 
 
 class AliESHNSW(BaseANN):
-    def __init__(self, metric, dataset, method_param):
+    def __init__(self, metric, dataset, m, efConstruction):
         self._metric = metric
         self._index_name = dataset.replace('-', '_') + str(uuid.uuid1()).replace('-', '_')
         print("index name: ", self._index_name, flush=True)
-        self._method_param = method_param
+        self._method_param = {"M": m, "efConstruction": efConstruction}
         self._ef = None
         self._field = "vec"
-        self._es = AsyncElasticsearch("http://es-cn-oew1ucddr000gp1ys.elasticsearch.aliyuncs.com:9200",
+        self._es = AsyncElasticsearch("http://es-cn-st21ujs0n000ygj8n.public.elasticsearch.aliyuncs.com:9200",
                                       http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeout=True, timeout=600)
         self._loop = asyncio.get_event_loop()
         self._fit_count = 0

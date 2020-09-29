@@ -220,37 +220,8 @@ float:
       constructor: AliESHNSW
       base-args: ["@metric", "@dataset"]
       run-groups:
-        M-4:
-          arg-groups:
-            - {"M": 4,  "efConstruction": 50}
-          query-args: [[50, 60, 80, 120, 200, 400, 600, 800]]
-        M-8:
-          arg-groups:
-            - {"M": 8,  "efConstruction": 50}
-          query-args: [[50, 60, 80, 120, 200, 400, 600, 800]]
-        M-12:
-          arg-groups:
-            - {"M": 12,  "efConstruction": 50}
-          query-args: [[50, 60, 80, 120, 200, 400, 600, 800]]
-        M-16:
-          arg-groups:
-            - {"M": 16,  "efConstruction": 50}
-          query-args: [[50, 60, 80, 120, 200, 400, 600, 800]]
-        M-24:
-          arg-groups:
-            - {"M": 24,  "efConstruction": 50}
-          query-args: [[50, 60, 80, 120, 200, 400, 600, 800]]
-        M-36:
-          arg-groups:
-            - {"M": 36,  "efConstruction": 50}
-          query-args: [[50, 60, 80, 120, 200, 400, 600, 800]]
-        M-48:
-          arg-groups:
-            - {"M": 48,  "efConstruction": 50}
-          query-args: [[50, 60, 80, 120, 200, 400, 600, 800]]
-        M-64:
-          arg-groups:
-            - {"M": 64,  "efConstruction": 50}
+        efConstruction:
+          args: [[4,8,12,16,24,36,48,64], [50,100,500]]
           query-args: [[50, 60, 80, 120, 200, 400, 600, 800]]
     nearpy:
       disabled: true
