@@ -12,7 +12,7 @@ class MilvusIVFFLAT(BaseANN):
         self._index_param = {'nlist': nlist}
         self._search_param = {'nprobe': None}
         self._metric = {'angular': milvus.MetricType.IP, 'euclidean': milvus.MetricType.L2}[metric]
-        self._milvus = milvus.Milvus(host='172.16.0.53', port='19530', try_connect=False, pre_ping=False)
+        self._milvus = milvus.Milvus(host='127.0.0.1', port='19532', try_connect=False, pre_ping=False)
         # import uuid
         # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._table_name = dataset.replace('-', '_')
@@ -59,7 +59,8 @@ class MilvusIVFFLAT(BaseANN):
         return False
 
     def batch_fit(self, X, total_num):
-        assert self._already_nums < total_num
+        if total_num > 0:
+            assert self._already_nums < total_num
 
         if self._metric == milvus.MetricType.IP:
             X = sklearn.preprocessing.normalize(X, axis=1, norm='l2')
@@ -69,7 +70,7 @@ class MilvusIVFFLAT(BaseANN):
             if has_table:
                 print("drop table...")
                 self._milvus.drop_collection(self._table_name)
-            print("create table...")
+            print("create table...", flush=True)
             self._milvus.create_collection({
                 'collection_name': self._table_name, 'dimension': X.shape[1],
                 'index_file_size': self._index_file_size, 'metric_type': self._metric}
@@ -87,7 +88,11 @@ class MilvusIVFFLAT(BaseANN):
         self._milvus.flush([self._table_name])
         self._already_nums += records_len
 
+        if total_num < 0:
+            return
+
         if self._already_nums == total_num:
+            print("Create index ...")
             index_type = getattr(milvus.IndexType, self._index_type)  # a bit hacky but works
             status = self._milvus.create_index(self._table_name, index_type, params=self._index_param)
             if not status.OK():

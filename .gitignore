@@ -16,7 +16,7 @@ data
 
 # temp files
 *.bak/
-results*/
+*results*/
 html*/
 *.txt
 *.log
