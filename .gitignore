@@ -16,12 +16,13 @@ data
 
 # temp files
 *.bak/
-results*/
+*results*/
 html*/
 *.txt
 *.log
 *.tar
 *.ipynb
+*.out
 
 # data
 data*/
