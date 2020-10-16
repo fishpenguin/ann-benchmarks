@@ -12,7 +12,7 @@ class MilvusIVFFLAT(BaseANN):
         self._index_param = {'nlist': nlist}
         self._search_param = {'nprobe': None}
         self._metric = {'angular': "IP", 'euclidean': "L2"}[metric]
-        self._milvus = milvus.Milvus(host='localhost', port='19530', try_connect=False, pre_ping=False)
+        self._milvus = milvus.Milvus(host='172.16.0.13', port='19530', try_connect=False, pre_ping=False)
         # import uuid
         # self._table_name = 'test_' + str(uuid.uuid1()).replace('-', '_')
         self._table_name = dataset.replace('-', '_')
@@ -43,9 +43,8 @@ class MilvusIVFFLAT(BaseANN):
             if table_stats:
                 row_nums = table_stats['row_count']
                 if row_nums >= total_num:
+                    return True
                     # self._already_nums == row_nums
-                    index_info = self._milvus.get_index_info(self._table_name)
-                    return index_info and len(index_info.params) != 0
         print('not already fit yet...')
         return False
 
@@ -61,11 +60,12 @@ class MilvusIVFFLAT(BaseANN):
                 print("drop table...")
                 self._milvus.drop_collection(self._table_name)
             print("create table...")
-            self._milvus.create_collection({
+            self._milvus.create_collection(self._table_name, {
                     "fields": [
                     {"name": "Vec", "type": milvus.DataType.FLOAT_VECTOR, "params": {"dim": X.shape[1]}}
                 ],
-                "segment_row_limit": 1000000}
+                "segment_row_limit": 4000000,
+                "auto_id": False}
             )
 
         vector_ids = [id for id in range(self._already_nums, self._already_nums + len(X))]
@@ -74,7 +74,7 @@ class MilvusIVFFLAT(BaseANN):
         step = 20000
         for i in range(0, records_len, step):
             end = min(i + step, records_len)
-            ids = self._milvus.insert(collection_name=self._table_name, entities={"name": "Vec", "values": X[i: end], "type": milvus.DataType.FLOAT_VECTOR}, ids=vector_ids[i:end])
+            ids = self._milvus.insert(collection_name=self._table_name, entities=[{"name": "Vec", "values": X[i: end], "type": milvus.DataType.FLOAT_VECTOR}], ids=vector_ids[i:end])
         self._milvus.flush([self._table_name])
         self._already_nums += records_len
 
@@ -107,7 +107,7 @@ class MilvusIVFFLAT(BaseANN):
         self._milvus.flush([self._table_name])
 
         index_type = getattr(milvus.IndexType, self._index_type)  # a bit hacky but works
-        status = self._milvus.create_index(self._table_name, index_type, params=self._index_param)
+        status = self._milvus.create_index(self._table_name, "Vec", index_type, params=self._index_param)
         if not status.OK():
             raise Exception("Create index failed. {}".format(status))
 #         self._milvus_id_to_index = {}
@@ -168,7 +168,7 @@ class MilvusIVFFLAT(BaseANN):
                     {
                         "vector": {
                             "Vec": {
-                                "topk": n, "query": X, "params": {"nlist": self._search_param['nprobe']}, "metric_type": "L2"
+                                "topk": n, "query": X, "params": {"nprobe": self._search_param['nprobe']}, "metric_type": "L2"
                             }
                         }
                     }
