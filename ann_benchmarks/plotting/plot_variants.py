@@ -7,8 +7,8 @@ all_plot_variants = {
     "recall/buildtime": ("k-nn", "build", False, True),
     "recall_0.8/buildtime": ("k-nn_0.8", "build", False, True),
 
-    # "recall/indexsize": ("k-nn", "indexsize"),
-    # "recall_0.8/indexsize": ("k-nn_0.8", "indexsize"),
+    "recall/indexsize": ("k-nn", "indexsize", True, True),
+    "recall_0.8/indexsize": ("k-nn_0.8", "indexsize", True, True),
 
     # "recall/distcomps": ("k-nn", "distcomps"),
     # "recall_0.8/distcomps": ("k-nn_0.8", "distcomps"),
