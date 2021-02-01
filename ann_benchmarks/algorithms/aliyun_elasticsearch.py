@@ -16,10 +16,11 @@ class AliESHNSW(BaseANN):
         self._method_param = {"M": m, "efConstruction": efConstruction}
         self._ef = None
         self._field = "vec"
-        self._es = AsyncElasticsearch("http://es-cn-nif1ul2p40002ctns.elasticsearch.aliyuncs.com:9200",
-                                      http_auth=("elastic", "Zilliz1314"), max_retries=5, retry_on_timeout=True, timeout=600)
+        self._es = AsyncElasticsearch("http://es-cn-m7r20z960000b14en.elasticsearch.aliyuncs.com:9200",
+                                      http_auth=("elastic", "Yukun19960713"), max_retries=5, retry_on_timeout=True, timeout=600)
         self._loop = asyncio.get_event_loop()
         self._fit_count = 0
+        self.res = None
 
     def get_memory_usage(self):
         exists = self._loop.run_until_complete(self._es.indices.exists(index=self._index_name))
@@ -62,7 +63,7 @@ class AliESHNSW(BaseANN):
                 "index.vector.hnsw.builder.efconstruction": self._method_param["efConstruction"],
                 "index.refresh_interval": "1s",
                 "index.number_of_replicas": 0,
-                "index.number_of_shards": 1,
+                "index.number_of_shards": 8,
                 # "index.write.wait_for_active_shards": "2"
             }
         }
@@ -179,9 +180,9 @@ class AliESHNSW(BaseANN):
         for q in X:
             res.append(self.query(q, n))
 
-        res_tuple = tuple(self.res)
+        res_tuple = tuple(res)
         results = self._loop.run_until_complete(asyncio.gather(*res_tuple))
-        self.rse = [[int(doc['_id']) for doc in result['hits']['hits']] for result in results]
+        self.res = [[int(doc['_id']) for doc in result['hits']['hits']] for result in results]
         return self.res
 
     def done(self):
